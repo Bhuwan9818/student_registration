@@ -1,0 +1,181 @@
+<?php
+require_once __DIR__ . '/config/config.php';
+requireAdmin();
+
+$pageTitle = 'All Registrations';
+
+// ---- Build filter conditions dynamically ----
+$where  = [];
+$params = [];
+
+if (!empty($_GET['course_id'])) {
+    $where[] = 's.course_id = ?';
+    $params[] = $_GET['course_id'];
+}
+if (!empty($_GET['university_id'])) {
+    $where[] = 's.university_id = ?';
+    $params[] = $_GET['university_id'];
+}
+if (!empty($_GET['session_id'])) {
+    $where[] = 's.session_id = ?';
+    $params[] = $_GET['session_id'];
+}
+if (!empty($_GET['status'])) {
+    $where[] = 's.status = ?';
+    $params[] = $_GET['status'];
+}
+if (!empty($_GET['staff_id'])) {
+    $where[] = 's.created_by = ?';
+    $params[] = $_GET['staff_id'];
+}
+if (!empty($_GET['gender'])) {
+    $where[] = 's.gender = ?';
+    $params[] = $_GET['gender'];
+}
+if (!empty($_GET['date_from'])) {
+    $where[] = 'DATE(s.created_at) >= ?';
+    $params[] = $_GET['date_from'];
+}
+if (!empty($_GET['date_to'])) {
+    $where[] = 'DATE(s.created_at) <= ?';
+    $params[] = $_GET['date_to'];
+}
+if (!empty($_GET['q'])) {
+    $where[] = "(s.first_name LIKE ? OR s.last_name LIKE ? OR s.registration_no LIKE ? OR s.mobile LIKE ?)";
+    $like = '%' . $_GET['q'] . '%';
+    array_push($params, $like, $like, $like, $like);
+}
+
+$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+$sql = "SELECT s.*, u.full_name as staff_name, c.name as course_name, un.name as university_name,
+               sy.year_label,
+               (SELECT status FROM fees f WHERE f.student_id = s.id ORDER BY f.id DESC LIMIT 1) as fee_status
+        FROM students s
+        LEFT JOIN users u ON u.id = s.created_by
+        LEFT JOIN courses c ON c.id = s.course_id
+        LEFT JOIN universities un ON un.id = s.university_id
+        LEFT JOIN sessions_years sy ON sy.id = s.session_id
+        $whereSql
+        ORDER BY s.created_at DESC";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$students = $stmt->fetchAll();
+
+$courses      = $pdo->query("SELECT * FROM courses WHERE status='active' ORDER BY name")->fetchAll();
+$universities = $pdo->query("SELECT * FROM universities WHERE status='active' ORDER BY name")->fetchAll();
+$sessionsYrs  = $pdo->query("SELECT * FROM sessions_years WHERE status='active' ORDER BY year_label DESC")->fetchAll();
+$staffList    = $pdo->query("SELECT id, full_name FROM users WHERE role='staff' ORDER BY full_name")->fetchAll();
+
+require_once __DIR__ . '/includes/header.php';
+?>
+
+<h4 class="mb-3">All Registrations</h4>
+
+<form method="GET" class="table-card bg-white p-3 mb-3">
+  <div class="row g-2">
+    <div class="col-md-3">
+      <input type="text" name="q" class="form-control form-control-sm" placeholder="Search name / reg no / mobile" value="<?= e($_GET['q'] ?? '') ?>">
+    </div>
+    <div class="col-md-2">
+      <select name="course_id" class="form-select form-select-sm">
+        <option value="">All Courses</option>
+        <?php foreach ($courses as $c): ?>
+          <option value="<?= $c['id'] ?>" <?= (($_GET['course_id'] ?? '') == $c['id']) ? 'selected' : '' ?>><?= e($c['name']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="university_id" class="form-select form-select-sm">
+        <option value="">All Universities</option>
+        <?php foreach ($universities as $u): ?>
+          <option value="<?= $u['id'] ?>" <?= (($_GET['university_id'] ?? '') == $u['id']) ? 'selected' : '' ?>><?= e($u['name']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="session_id" class="form-select form-select-sm">
+        <option value="">All Sessions</option>
+        <?php foreach ($sessionsYrs as $sy): ?>
+          <option value="<?= $sy['id'] ?>" <?= (($_GET['session_id'] ?? '') == $sy['id']) ? 'selected' : '' ?>><?= e($sy['year_label']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="status" class="form-select form-select-sm">
+        <option value="">All Status</option>
+        <option value="submitted" <?= (($_GET['status'] ?? '') == 'submitted') ? 'selected' : '' ?>>Submitted</option>
+        <option value="approved" <?= (($_GET['status'] ?? '') == 'approved') ? 'selected' : '' ?>>Approved</option>
+        <option value="rejected" <?= (($_GET['status'] ?? '') == 'rejected') ? 'selected' : '' ?>>Rejected</option>
+      </select>
+    </div>
+    <div class="col-md-1">
+      <button class="btn btn-sm btn-primary w-100"><i class="fa-solid fa-filter"></i></button>
+    </div>
+  </div>
+  <div class="row g-2 mt-1">
+    <div class="col-md-2">
+      <select name="staff_id" class="form-select form-select-sm">
+        <option value="">All Staff</option>
+        <?php foreach ($staffList as $st): ?>
+          <option value="<?= $st['id'] ?>" <?= (($_GET['staff_id'] ?? '') == $st['id']) ? 'selected' : '' ?>><?= e($st['full_name']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="gender" class="form-select form-select-sm">
+        <option value="">All Genders</option>
+        <option value="Male" <?= (($_GET['gender'] ?? '') == 'Male') ? 'selected' : '' ?>>Male</option>
+        <option value="Female" <?= (($_GET['gender'] ?? '') == 'Female') ? 'selected' : '' ?>>Female</option>
+        <option value="Other" <?= (($_GET['gender'] ?? '') == 'Other') ? 'selected' : '' ?>>Other</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <input type="date" name="date_from" class="form-control form-control-sm" value="<?= e($_GET['date_from'] ?? '') ?>" title="From date">
+    </div>
+    <div class="col-md-2">
+      <input type="date" name="date_to" class="form-control form-control-sm" value="<?= e($_GET['date_to'] ?? '') ?>" title="To date">
+    </div>
+    <div class="col-md-2">
+      <a href="admin_students.php" class="btn btn-sm btn-outline-secondary w-100">Reset</a>
+    </div>
+  </div>
+</form>
+
+<div class="table-card bg-white p-3">
+  <div class="d-flex justify-content-between mb-2">
+    <span class="text-muted small"><?= count($students) ?> record(s) found</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Reg No</th><th>Name</th><th>Mobile</th><th>Course</th><th>University</th>
+          <th>Session</th><th>Staff</th><th>Status</th><th>Fee</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($students as $s): ?>
+        <tr>
+          <td><?= e($s['registration_no']) ?></td>
+          <td><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
+          <td><?= e($s['mobile']) ?></td>
+          <td><?= e($s['course_name'] ?? '-') ?></td>
+          <td><?= e($s['university_name'] ?? '-') ?></td>
+          <td><?= e($s['year_label'] ?? '-') ?></td>
+          <td><?= e($s['staff_name'] ?? '-') ?></td>
+          <td><?= statusBadge($s['status']) ?></td>
+          <td><?= $s['fee_status'] ? statusBadge($s['fee_status']) : '<span class="badge bg-light text-dark border">Not Paid</span>' ?></td>
+          <td><a href="student_detail.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary">View</a></td>
+        </tr>
+        <?php endforeach; ?>
+        <?php if (!$students): ?>
+          <tr><td colspan="10" class="text-center text-muted py-4">No records match the selected filters.</td></tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
