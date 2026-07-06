@@ -34,7 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - Admission Portal</title>
+<title>Login - VS Academy Admission Portal</title>
+<link rel="icon" type="image/png" href="assets/img/logo.png">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <link href="assets/css/style.css" rel="stylesheet">
@@ -43,10 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="login-wrapper">
   <div class="login-card">
     <div class="text-center mb-4">
-      <div class="login-mark"><i class="fa-solid fa-graduation-cap"></i></div>
-      <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#B8912F; font-weight:600;">Registrar's Office</div>
-      <h4 class="mt-1 mb-0">Admission Portal</h4>
-      <small class="text-muted">Sign in to manage admissions</small>
+      <img src="assets/img/logo.png" alt="VS Academy" style="width:90px; height:auto; margin-bottom:8px;">
+      <h4 class="mt-1 mb-0">VS Academy</h4>
+      <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#C79A42; font-weight:600;">Admission Portal</div>
+      <small class="text-muted d-block mt-1">Sign in to manage admissions</small>
     </div>
     <?php if ($error): ?>
       <div class="alert alert-danger py-2 small"><?= e($error) ?></div>

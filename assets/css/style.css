@@ -7,12 +7,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
 :root {
-  --ink:        #0B1830;   /* sidebar / deepest surface */
-  --ink-2:      #12213F;   /* sidebar hover */
-  --navy:       #16305C;   /* primary brand blue */
-  --navy-light: #2C4E8C;
-  --gold:       #B8912F;   /* brass accent */
-  --gold-light: #E8C567;
+  --ink:        #0A1F47;   /* sidebar / deepest surface — matches logo navy */
+  --ink-2:      #122A5C;   /* sidebar hover */
+  --navy:       #0F3A78;   /* primary brand blue */
+  --navy-light: #2E5FA6;
+  --gold:       #C79A42;   /* brass accent — matches logo gold */
+  --gold-light: #E8C568;
   --canvas:     #F5F6FA;   /* page background */
   --surface:    #FFFFFF;
   --border:     #E7E9F1;
@@ -89,6 +89,16 @@ a { color: var(--navy-light); }
   color: var(--ink);
   font-size: 1.05rem;
   flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 9px;
+  padding: 4px;
 }
 
 .sidebar-brand .title {

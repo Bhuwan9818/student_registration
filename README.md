@@ -6,11 +6,17 @@ fully responsive design (mobile / tablet / laptop).
 
 ## Design
 
-Ink-navy + brass-gold "registrar's ledger" theme — a serif display face
-(Fraunces) for headings and numbers, a clean sans (Inter) for UI, and a
-monospace face (IBM Plex Mono) for registration numbers/IDs. The sidebar
-collapses into a slide-out drawer with a backdrop on tablet/mobile; stat
-cards, tables, and forms all reflow down to phone width.
+Branded for **VS Academy** — ink-navy + brass-gold theme sampled directly
+from the college logo (`assets/img/logo.png`), which appears in the sidebar,
+login screen, and printable admission slip. Serif display face (Fraunces)
+for headings and numbers, a clean sans (Inter) for UI, and a monospace face
+(IBM Plex Mono) for registration numbers/IDs. The sidebar collapses into a
+slide-out drawer with a backdrop on tablet/mobile; stat cards, tables, and
+forms all reflow down to phone width.
+
+To swap in a different logo later, just replace `assets/img/logo.png` with
+a same-aspect-ratio PNG (transparent background works best) — no code
+changes needed.
 
 ## Features
 

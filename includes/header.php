@@ -11,7 +11,8 @@ $initials = substr($initials, 0, 2) ?: 'U';
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= e($pageTitle ?? 'Admission Portal') ?></title>
+<title><?= e($pageTitle ?? 'VS Academy') ?> - VS Academy</title>
+<link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/img/logo.png">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <link href="<?= BASE_URL ?>/assets/css/style.css" rel="stylesheet">
@@ -24,11 +25,8 @@ $initials = substr($initials, 0, 2) ?: 'U';
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <div class="mark"><i class="fa-solid fa-graduation-cap"></i></div>
-      <div>
-        <span class="subtitle">Registrar's Office</span>
-        <div class="title">Admission Portal</div>
-      </div>
+      <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="VS Academy" class="brand-logo">
+      
     </div>
     <nav class="sidebar-nav">
       <?php if (isAdmin()): ?>

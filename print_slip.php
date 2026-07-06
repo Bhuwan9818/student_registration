@@ -69,9 +69,9 @@ $fee = $feeStmt->fetch();
 
 <div class="slip">
   <div class="slip-header">
-    <div class="mark"><i class="fa-solid fa-graduation-cap"></i></div>
+    <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="VS Academy" style="width:52px; height:52px; object-fit:contain; flex-shrink:0; background:#fff; border-radius:10px; padding:5px;">
     <div>
-      <div style="font-family:var(--font-display); font-size:1.2rem; font-weight:600;">Admission Portal</div>
+      <div style="font-family:var(--font-display); font-size:1.2rem; font-weight:600;">VS Academy</div>
       <div style="font-size:.78rem; color:var(--gold-light); text-transform:uppercase; letter-spacing:.08em;">Provisional Admission Slip</div>
     </div>
     <div class="ms-auto text-end">
