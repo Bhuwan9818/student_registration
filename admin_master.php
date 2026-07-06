@@ -11,8 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_item'])) {
 
     if ($type === 'course') {
         $duration = (int)($_POST['duration_years'] ?? 1);
-        $ins = $pdo->prepare("INSERT INTO courses (name, duration_years) VALUES (?, ?)");
-        $ins->execute([$name, $duration]);
+        $seats = !empty($_POST['total_seats']) ? (int)$_POST['total_seats'] : null;
+        $ins = $pdo->prepare("INSERT INTO courses (name, duration_years, total_seats) VALUES (?, ?, ?)");
+        $ins->execute([$name, $duration, $seats]);
     } elseif ($type === 'university') {
         $ins = $pdo->prepare("INSERT INTO universities (name) VALUES (?)");
         $ins->execute([$name]);
@@ -43,25 +44,39 @@ $sessionsYrs  = $pdo->query("SELECT * FROM sessions_years ORDER BY year_label DE
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<h4 class="mb-3">Master Data</h4>
+<div class="page-header">
+  <div>
+    <span class="eyebrow">Administration</span>
+    <h4>Master Data</h4>
+  </div>
+</div>
 
 <div class="row g-3">
   <!-- Courses -->
   <div class="col-lg-4">
-    <div class="table-card bg-white p-3">
+    <div class="table-card p-3">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="mb-0">Courses</h6>
         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCourseModal">+ Add</button>
       </div>
       <ul class="list-group list-group-flush">
         <?php foreach ($courses as $c): ?>
-        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-          <span><?= e($c['name']) ?> <small class="text-muted">(<?= $c['duration_years'] ?> yr)</small></span>
-          <form method="POST" class="d-inline">
-            <input type="hidden" name="type" value="course">
-            <input type="hidden" name="id" value="<?= $c['id'] ?>">
-            <button type="submit" name="toggle_item" value="1" class="badge border-0 bg-<?= $c['status']=='active'?'success':'secondary' ?>"><?= ucfirst($c['status']) ?></button>
-          </form>
+        <?php [$filled, $total] = courseSeatUsage($pdo, $c['id']); $pct = $total ? min(100, round($filled / $total * 100)) : 0; ?>
+        <li class="list-group-item px-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <span><?= e($c['name']) ?> <small class="text-muted">(<?= $c['duration_years'] ?> yr)</small></span>
+            <form method="POST" class="d-inline">
+              <input type="hidden" name="type" value="course">
+              <input type="hidden" name="id" value="<?= $c['id'] ?>">
+              <button type="submit" name="toggle_item" value="1" class="badge border-0 bg-<?= $c['status']=='active'?'success':'secondary' ?>"><?= ucfirst($c['status']) ?></button>
+            </form>
+          </div>
+          <?php if ($total): ?>
+            <div class="small text-muted mt-1"><?= $filled ?> / <?= $total ?> seats filled</div>
+            <div class="seat-bar"><div class="seat-bar-fill <?= $pct >= 100 ? 'full' : ($pct >= 80 ? 'near' : '') ?>" style="width: <?= $pct ?>%"></div></div>
+          <?php else: ?>
+            <div class="small text-muted mt-1">No seat limit set</div>
+          <?php endif; ?>
         </li>
         <?php endforeach; ?>
       </ul>
@@ -70,7 +85,7 @@ require_once __DIR__ . '/includes/header.php';
 
   <!-- Universities -->
   <div class="col-lg-4">
-    <div class="table-card bg-white p-3">
+    <div class="table-card p-3">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="mb-0">Universities</h6>
         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addUniversityModal">+ Add</button>
@@ -92,7 +107,7 @@ require_once __DIR__ . '/includes/header.php';
 
   <!-- Sessions -->
   <div class="col-lg-4">
-    <div class="table-card bg-white p-3">
+    <div class="table-card p-3">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="mb-0">Sessions / Years</h6>
         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addSessionModal">+ Add</button>
@@ -122,7 +137,9 @@ require_once __DIR__ . '/includes/header.php';
       <label class="form-label">Course Name</label>
       <input type="text" name="name" class="form-control mb-2" required>
       <label class="form-label">Duration (Years)</label>
-      <input type="number" name="duration_years" class="form-control" min="1" max="6" value="3">
+      <input type="number" name="duration_years" class="form-control mb-2" min="1" max="6" value="3">
+      <label class="form-label">Total Seats <small class="text-muted">(optional)</small></label>
+      <input type="number" name="total_seats" class="form-control" min="1" placeholder="Leave blank for unlimited">
     </div>
     <div class="modal-footer"><button type="submit" name="add_item" value="1" class="btn btn-primary btn-sm">Add</button></div>
   </form>

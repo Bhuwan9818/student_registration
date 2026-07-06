@@ -31,6 +31,8 @@ if (isAdmin() && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_a
     $newStatus = $_POST['review_action'] === 'approve' ? 'approved' : 'rejected';
     $upd = $pdo->prepare("UPDATE students SET status = ? WHERE id = ?");
     $upd->execute([$newStatus, $id]);
+    logActivity($pdo, $_SESSION['user_id'], $newStatus === 'approved' ? 'approve' : 'reject',
+        ucfirst($newStatus) . ' registration for ' . $student['first_name'] . ' ' . $student['last_name'], $id);
     flash('success', "Registration marked as $newStatus.");
     redirect('student_detail.php?id=' . $id);
 }
@@ -45,16 +47,22 @@ $pageTitle = 'Registration - ' . $student['registration_no'];
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0">Registration Details</h4>
-  <a href="<?= isAdmin() ? 'admin_students.php' : 'my_students.php' ?>" class="btn btn-sm btn-outline-secondary">
-    <i class="fa-solid fa-arrow-left"></i> Back
-  </a>
+<div class="page-header">
+  <div>
+    <span class="eyebrow">Registration</span>
+    <h4><?= e($student['first_name'] . ' ' . $student['last_name']) ?></h4>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="print_slip.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Print Slip</a>
+    <a href="<?= isAdmin() ? 'admin_students.php' : 'my_students.php' ?>" class="btn btn-sm btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left"></i> Back
+    </a>
+  </div>
 </div>
 
 <div class="row g-3">
   <div class="col-lg-8">
-    <div class="table-card bg-white p-4 mb-3">
+    <div class="table-card p-4 mb-3">
       <div class="d-flex justify-content-between align-items-start mb-3">
         <div>
           <h5 class="mb-0"><?= e($student['first_name'] . ' ' . $student['last_name']) ?></h5>
@@ -108,7 +116,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
     <?php if (isAdmin() && $student['status'] === 'submitted'): ?>
-    <div class="table-card bg-white p-3">
+    <div class="table-card p-3">
       <h6>Review this registration</h6>
       <form method="POST" class="d-flex gap-2">
         <button type="submit" name="review_action" value="approve" class="btn btn-success btn-sm"><i class="fa-solid fa-check"></i> Approve</button>
@@ -119,7 +127,7 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 
   <div class="col-lg-4">
-    <div class="table-card bg-white p-3">
+    <div class="table-card p-3">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h6 class="mb-0">Fee Status</h6>
         <?php if (!isAdmin()): ?>

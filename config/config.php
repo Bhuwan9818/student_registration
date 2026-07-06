@@ -116,6 +116,25 @@ function active($page) {
     return (basename($_SERVER['PHP_SELF']) === $page) ? 'active' : '';
 }
 
+// Records an entry in the activity feed (shown on the admin dashboard)
+function logActivity($pdo, $userId, $action, $description, $studentId = null) {
+    $stmt = $pdo->prepare("INSERT INTO activity_log (user_id, student_id, action, description) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$userId, $studentId, $action, $description]);
+}
+
+// Returns [filled, total] seats for a course, or [filled, null] if no cap is set
+function courseSeatUsage($pdo, $courseId) {
+    $stmt = $pdo->prepare("SELECT total_seats FROM courses WHERE id = ?");
+    $stmt->execute([$courseId]);
+    $total = $stmt->fetchColumn();
+
+    $stmt2 = $pdo->prepare("SELECT COUNT(*) FROM students WHERE course_id = ? AND status != 'rejected'");
+    $stmt2->execute([$courseId]);
+    $filled = $stmt2->fetchColumn();
+
+    return [$filled, $total !== false ? $total : null];
+}
+
 function statusBadge($status) {
     $map = [
         'submitted' => 'secondary',

@@ -27,7 +27,12 @@ $recent = $recent->fetchAll();
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<h4 class="mb-4">Welcome, <?= e($_SESSION['full_name']) ?></h4>
+<div class="page-header">
+  <div>
+    <span class="eyebrow">Overview</span>
+    <h4>Welcome, <?= e($_SESSION['full_name']) ?></h4>
+  </div>
+</div>
 
 <div class="row g-3 mb-4">
   <div class="col-6 col-md-3">
@@ -60,17 +65,17 @@ require_once __DIR__ . '/includes/header.php';
   <a href="register_student.php" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> New Student Registration</a>
 </div>
 
-<div class="table-card bg-white p-3">
+<div class="table-card p-3">
   <h6 class="mb-3">Your Recent Submissions</h6>
   <div class="table-responsive">
-    <table class="table table-sm align-middle">
+    <table class="table table-sm table-ledger align-middle">
       <thead class="table-light">
         <tr><th>Reg No</th><th>Name</th><th>Course</th><th>Status</th><th>Date</th><th></th></tr>
       </thead>
       <tbody>
         <?php foreach ($recent as $r): ?>
         <tr>
-          <td><?= e($r['registration_no']) ?></td>
+          <td class="reg-no"><?= e($r['registration_no']) ?></td>
           <td><?= e($r['first_name'] . ' ' . $r['last_name']) ?></td>
           <td><?= e($r['course_name'] ?? '-') ?></td>
           <td><?= statusBadge($r['status']) ?></td>

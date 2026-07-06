@@ -32,9 +32,14 @@ $students = $stmt->fetchAll();
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<h4 class="mb-3">My Submissions</h4>
+<div class="page-header">
+  <div>
+    <span class="eyebrow">Admissions</span>
+    <h4>My Submissions</h4>
+  </div>
+</div>
 
-<form method="GET" class="table-card bg-white p-3 mb-3">
+<form method="GET" class="table-card p-3 mb-3">
   <div class="row g-2">
     <div class="col-md-5">
       <input type="text" name="q" class="form-control form-control-sm" placeholder="Search name / reg no" value="<?= e($_GET['q'] ?? '') ?>">
@@ -54,16 +59,16 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </form>
 
-<div class="table-card bg-white p-3">
+<div class="table-card p-3">
   <div class="table-responsive">
-    <table class="table table-sm align-middle">
+    <table class="table table-sm table-ledger align-middle">
       <thead class="table-light">
         <tr><th>Reg No</th><th>Name</th><th>Course</th><th>Status</th><th>Fee</th><th>Date</th><th></th></tr>
       </thead>
       <tbody>
         <?php foreach ($students as $s): ?>
         <tr>
-          <td><?= e($s['registration_no']) ?></td>
+          <td class="reg-no"><?= e($s['registration_no']) ?></td>
           <td><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
           <td><?= e($s['course_name'] ?? '-') ?></td>
           <td><?= statusBadge($s['status']) ?></td>

@@ -38,6 +38,7 @@ CREATE TABLE courses (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
   duration_years INT DEFAULT 1,
+  total_seats INT DEFAULT NULL,
   status ENUM('active','inactive') NOT NULL DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -50,7 +51,7 @@ CREATE TABLE sessions_years (
 ) ENGINE=InnoDB;
 
 INSERT INTO universities (name) VALUES ('Delhi University'), ('IGNOU'), ('IP University');
-INSERT INTO courses (name, duration_years) VALUES ('B.Tech', 4), ('BBA', 3), ('BCA', 3), ('MBA', 2);
+INSERT INTO courses (name, duration_years, total_seats) VALUES ('B.Tech', 4, 120), ('BBA', 3, 60), ('BCA', 3, 60), ('MBA', 2, 40);
 INSERT INTO sessions_years (year_label) VALUES ('2025-2026'), ('2026-2027');
 
 -- ------------------------------------------------------------
@@ -126,4 +127,18 @@ CREATE TABLE fees (
 
   FOREIGN KEY (student_id) REFERENCES students(id),
   FOREIGN KEY (submitted_by) REFERENCES users(id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- Activity log (dashboard activity feed / lightweight audit trail)
+-- ------------------------------------------------------------
+CREATE TABLE activity_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT DEFAULT NULL,
+  student_id INT DEFAULT NULL,
+  action VARCHAR(50) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (student_id) REFERENCES students(id)
 ) ENGINE=InnoDB;

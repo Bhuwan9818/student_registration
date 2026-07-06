@@ -8,8 +8,20 @@ $pageTitle = 'Fee Verification';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fee_action'])) {
     $feeId = (int)$_POST['fee_id'];
     $newStatus = $_POST['fee_action'] === 'verify' ? 'verified' : 'rejected';
+
+    $info = $pdo->prepare("SELECT f.student_id, f.amount, s.first_name, s.last_name FROM fees f JOIN students s ON s.id = f.student_id WHERE f.id = ?");
+    $info->execute([$feeId]);
+    $feeInfo = $info->fetch();
+
     $upd = $pdo->prepare("UPDATE fees SET status = ?, verified_by = ?, verified_at = NOW() WHERE id = ?");
     $upd->execute([$newStatus, $_SESSION['user_id'], $feeId]);
+
+    if ($feeInfo) {
+        logActivity($pdo, $_SESSION['user_id'], $newStatus === 'verified' ? 'fee_verify' : 'fee_reject',
+            'Fee of ₹' . number_format($feeInfo['amount'], 2) . ' ' . $newStatus . ' for ' . $feeInfo['first_name'] . ' ' . $feeInfo['last_name'],
+            $feeInfo['student_id']);
+    }
+
     flash('success', "Fee marked as $newStatus.");
     redirect($_POST['redirect_to'] ?? 'admin_fees.php');
 }
@@ -34,8 +46,11 @@ $fees = $stmt->fetchAll();
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0">Fee Verification</h4>
+<div class="page-header">
+  <div>
+    <span class="eyebrow">Admissions</span>
+    <h4>Fee Verification</h4>
+  </div>
   <div class="btn-group btn-group-sm">
     <a href="?status=pending" class="btn btn-outline-primary <?= $filterStatus == 'pending' ? 'active' : '' ?>">Pending</a>
     <a href="?status=verified" class="btn btn-outline-primary <?= $filterStatus == 'verified' ? 'active' : '' ?>">Verified</a>
@@ -44,9 +59,9 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </div>
 
-<div class="table-card bg-white p-3">
+<div class="table-card p-3">
   <div class="table-responsive">
-    <table class="table table-sm align-middle">
+    <table class="table table-sm table-ledger align-middle">
       <thead class="table-light">
         <tr>
           <th>Reg No</th><th>Student</th><th>Amount</th><th>Mode</th><th>Type</th>
@@ -56,7 +71,7 @@ require_once __DIR__ . '/includes/header.php';
       <tbody>
         <?php foreach ($fees as $f): ?>
         <tr>
-          <td><?= e($f['registration_no']) ?></td>
+          <td class="reg-no"><?= e($f['registration_no']) ?></td>
           <td><?= e($f['first_name'] . ' ' . $f['last_name']) ?></td>
           <td>₹<?= number_format($f['amount'], 2) ?></td>
           <td><?= e($f['mode']) ?></td>

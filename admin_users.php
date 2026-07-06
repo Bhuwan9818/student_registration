@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_user'])) {
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $ins = $pdo->prepare("INSERT INTO users (full_name, username, email, password, role) VALUES (?, ?, ?, ?, 'staff')");
         $ins->execute([$fullName, $username, $email, $hash]);
+        logActivity($pdo, $_SESSION['user_id'], 'staff_create', 'New staff account created: ' . $fullName);
         flash('success', 'Staff account created successfully.');
     }
     redirect('admin_users.php');
@@ -57,16 +58,19 @@ $staff = $pdo->query("SELECT u.*, (SELECT COUNT(*) FROM students s WHERE s.creat
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0">Manage Staff</h4>
+<div class="page-header">
+  <div>
+    <span class="eyebrow">Administration</span>
+    <h4>Manage Staff</h4>
+  </div>
   <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
     <i class="fa-solid fa-plus"></i> Add Staff
   </button>
 </div>
 
-<div class="table-card bg-white p-3">
+<div class="table-card p-3">
   <div class="table-responsive">
-    <table class="table table-sm align-middle">
+    <table class="table table-sm table-ledger align-middle">
       <thead class="table-light">
         <tr><th>Name</th><th>Username</th><th>Email</th><th>Forms Submitted</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
       </thead>

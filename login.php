@@ -43,23 +43,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="login-wrapper">
   <div class="login-card">
     <div class="text-center mb-4">
-      <i class="fa-solid fa-graduation-cap fa-2x text-primary"></i>
-      <h4 class="mt-2 mb-0">Admission Portal</h4>
-      <small class="text-muted">Sign in to continue</small>
+      <div class="login-mark"><i class="fa-solid fa-graduation-cap"></i></div>
+      <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#B8912F; font-weight:600;">Registrar's Office</div>
+      <h4 class="mt-1 mb-0">Admission Portal</h4>
+      <small class="text-muted">Sign in to manage admissions</small>
     </div>
     <?php if ($error): ?>
-      <div class="alert alert-danger py-2"><?= e($error) ?></div>
+      <div class="alert alert-danger py-2 small"><?= e($error) ?></div>
     <?php endif; ?>
     <form method="POST">
       <div class="mb-3">
-        <label class="form-label">Username</label>
+        <label class="form-label small fw-semibold">Username</label>
         <input type="text" name="username" class="form-control" required autofocus>
       </div>
       <div class="mb-3">
-        <label class="form-label">Password</label>
+        <label class="form-label small fw-semibold">Password</label>
         <input type="password" name="password" class="form-control" required>
       </div>
-      <button type="submit" class="btn btn-primary w-100">Login</button>
+      <button type="submit" class="btn btn-primary w-100 py-2">Sign In</button>
     </form>
     <p class="text-center text-muted mt-3 small mb-0">Default admin: admin / Admin@123</p>
   </div>

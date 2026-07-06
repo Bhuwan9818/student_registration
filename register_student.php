@@ -89,6 +89,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newStudentId = $pdo->lastInsertId();
             unset($_SESSION['wizard']); // clear wizard data
 
+            logActivity($pdo, $_SESSION['user_id'], 'registration',
+                'New registration for ' . $w['first_name'] . ' ' . $w['last_name'], $newStudentId);
+
             flash('success', "Registration submitted successfully! Reg No: $regNo. You can now submit the fee.");
             redirect('submit_fee.php?student_id=' . $newStudentId);
         }
@@ -104,7 +107,7 @@ $sessionsYrs  = $pdo->query("SELECT * FROM sessions_years WHERE status='active' 
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="table-card bg-white p-4">
+<div class="table-card p-4">
 
   <ul class="wizard-steps">
     <li class="<?= $step==1?'active':($step>1?'done':'') ?>"><div class="circle">1</div>Personal</li>
@@ -268,12 +271,18 @@ require_once __DIR__ . '/includes/header.php';
       </div>
       <div class="col-md-4">
         <label class="form-label">Course *</label>
-        <select name="course_id" class="form-select" required>
+        <select name="course_id" id="courseSelect" class="form-select" required>
           <option value="">Select Course</option>
           <?php foreach ($courses as $c): ?>
-            <option value="<?= $c['id'] ?>" <?= (($w['course_id'] ?? '') == $c['id']) ? 'selected' : '' ?>><?= e($c['name']) ?></option>
+            <?php [$filled, $total] = courseSeatUsage($pdo, $c['id']); ?>
+            <option value="<?= $c['id'] ?>"
+              data-filled="<?= $filled ?>" data-total="<?= $total ?? '' ?>"
+              <?= (($w['course_id'] ?? '') == $c['id']) ? 'selected' : '' ?>>
+              <?= e($c['name']) ?><?= $total ? " ($filled/$total seats)" : '' ?>
+            </option>
           <?php endforeach; ?>
         </select>
+        <div id="seatNote" class="small mt-1"></div>
       </div>
       <div class="col-md-4">
         <label class="form-label">Session *</label>
@@ -303,4 +312,30 @@ require_once __DIR__ . '/includes/header.php';
 
 </div>
 
+<?php if ($step === 5): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const sel = document.getElementById('courseSelect');
+  const note = document.getElementById('seatNote');
+  function updateNote() {
+    const opt = sel.options[sel.selectedIndex];
+    const total = opt.dataset.total;
+    const filled = opt.dataset.filled;
+    if (!total) { note.innerHTML = ''; return; }
+    const remaining = total - filled;
+    if (remaining <= 0) {
+      note.innerHTML = '<span class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> This course is at full capacity.</span>';
+    } else if (remaining <= Math.ceil(total * 0.2)) {
+      note.innerHTML = '<span class="text-warning"><i class="fa-solid fa-circle-exclamation"></i> Only ' + remaining + ' seat(s) left.</span>';
+    } else {
+      note.innerHTML = '<span class="text-muted">' + remaining + ' seat(s) available.</span>';
+    }
+  }
+  sel.addEventListener('change', updateNote);
+  updateNote();
+});
+</script>
+<?php endif; ?>
+
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+

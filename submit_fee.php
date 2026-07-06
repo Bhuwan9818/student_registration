@@ -41,6 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     $ins->execute([$studentId, $amount, $mode, $entryType, $utrNo, $proofPath, $remarks, $_SESSION['user_id']]);
 
+    logActivity($pdo, $_SESSION['user_id'], 'fee_submit',
+        'Fee of ₹' . number_format($amount, 2) . ' submitted for ' . $student['first_name'] . ' ' . $student['last_name'], $studentId);
+
     flash('success', 'Fee submitted successfully. It will be verified by the admin shortly.');
     redirect('student_detail.php?id=' . $studentId);
 }
@@ -48,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="table-card bg-white p-4" style="max-width:650px;">
+<div class="table-card p-4" style="max-width:650px;">
   <h5 class="mb-1">Submit Fee</h5>
   <p class="text-muted small mb-4">
     For <strong><?= e($student['first_name'] . ' ' . $student['last_name']) ?></strong>
