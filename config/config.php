@@ -7,10 +7,10 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'admission_portal');
 define('DB_USER', 'root');
-define('DB_PASS', 'root');
+define('DB_PASS', '');
 // -----------------------------------------------
 
-define('BASE_URL', '/student_registration'); // e.g. '/admission-portal' if hosted in a subfolder
+define('BASE_URL', '/admission-portal'); // e.g. '/admission-portal' if hosted in a subfolder
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
