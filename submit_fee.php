@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/config.php';
-requireStaff();
+requireLogin();
 
 $pageTitle = 'Submit Fee';
 $studentId = (int)($_GET['student_id'] ?? 0);

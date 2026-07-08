@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/config.php';
-requireStaff();
+requireLogin();
 
 $pageTitle = 'New Student Registration';
 
@@ -70,16 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $regNo = generateRegistrationNo($pdo);
 
             $sql = "INSERT INTO students (
-                        registration_no, created_by, first_name, last_name, dob, gender, category, aadhar_no, photo_path,
+                        registration_no, registration_type, created_by, first_name, last_name, dob, gender, category, aadhar_no, photo_path,
                         mobile, alt_mobile, email, address, city, state, pincode,
                         father_name, mother_name, guardian_mobile,
                         last_qualification, board_university, passing_year, percentage, marksheet_path,
                         university_id, course_id, session_id
-                    ) VALUES (?,?,?,?,?,?,?,?,?, ?,?,?,?,?,?,?, ?,?,?, ?,?,?,?,?, ?,?,?)";
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?, ?,?,?,?,?,?,?, ?,?,?, ?,?,?,?,?, ?,?,?)";
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                $regNo, $_SESSION['user_id'], $w['first_name'], $w['last_name'], $w['dob'] ?: null, $w['gender'], $w['category'], $w['aadhar_no'], $w['photo_path'] ?? null,
+                $regNo, 'fresh', $_SESSION['user_id'], $w['first_name'], $w['last_name'], $w['dob'] ?: null, $w['gender'], $w['category'], $w['aadhar_no'], $w['photo_path'] ?? null,
                 $w['mobile'], $w['alt_mobile'], $w['email'], $w['address'], $w['city'], $w['state'], $w['pincode'],
                 $w['father_name'], $w['mother_name'], $w['guardian_mobile'],
                 $w['last_qualification'], $w['board_university'], $w['passing_year'], $w['percentage'], $w['marksheet_path'] ?? null,

@@ -92,8 +92,8 @@ a { color: var(--navy-light); }
 }
 
 .brand-logo {
-  width: 110px;
-  height: 90px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   flex-shrink: 0;
   background: #fff;

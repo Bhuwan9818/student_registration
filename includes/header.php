@@ -26,7 +26,10 @@ $initials = substr($initials, 0, 2) ?: 'U';
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="VS Academy" class="brand-logo">
-      
+      <div>
+        <span class="subtitle">Registrar's Office</span>
+        <div class="title">VS Academy</div>
+      </div>
     </div>
     <nav class="sidebar-nav">
       <?php if (isAdmin()): ?>
@@ -34,7 +37,9 @@ $initials = substr($initials, 0, 2) ?: 'U';
         <a href="<?= BASE_URL ?>/admin_dashboard.php" class="<?= active('admin_dashboard.php') ?>"><i class="fa-solid fa-gauge"></i> Dashboard</a>
 
         <span class="sidebar-section-label">Admissions</span>
-        <a href="<?= BASE_URL ?>/admin_students.php" class="<?= active('admin_students.php') ?>"><i class="fa-solid fa-users"></i> All Registrations</a>
+        <a href="<?= BASE_URL ?>/admin_students.php" class="<?= active('admin_students.php') ?>"><i class="fa-solid fa-users"></i> All Applications</a>
+        <a href="<?= BASE_URL ?>/register_student.php" class="<?= active('register_student.php') ?>"><i class="fa-solid fa-user-plus"></i> Apply Fresh</a>
+        <a href="<?= BASE_URL ?>/re_registration.php" class="<?= active('re_registration.php') ?>"><i class="fa-solid fa-rotate"></i> Re-Registration</a>
         <a href="<?= BASE_URL ?>/admin_fees.php" class="<?= active('admin_fees.php') ?>"><i class="fa-solid fa-money-check-dollar"></i> Fee Verification</a>
         <a href="<?= BASE_URL ?>/admin_activity.php" class="<?= active('admin_activity.php') ?>"><i class="fa-solid fa-clock-rotate-left"></i> Activity Log</a>
 
@@ -46,7 +51,8 @@ $initials = substr($initials, 0, 2) ?: 'U';
         <a href="<?= BASE_URL ?>/staff_dashboard.php" class="<?= active('staff_dashboard.php') ?>"><i class="fa-solid fa-gauge"></i> Dashboard</a>
 
         <span class="sidebar-section-label">Admissions</span>
-        <a href="<?= BASE_URL ?>/register_student.php" class="<?= active('register_student.php') ?>"><i class="fa-solid fa-user-plus"></i> New Registration</a>
+        <a href="<?= BASE_URL ?>/register_student.php" class="<?= active('register_student.php') ?>"><i class="fa-solid fa-user-plus"></i> Apply Fresh</a>
+        <a href="<?= BASE_URL ?>/re_registration.php" class="<?= active('re_registration.php') ?>"><i class="fa-solid fa-rotate"></i> Re-Registration</a>
         <a href="<?= BASE_URL ?>/my_students.php" class="<?= active('my_students.php') ?>"><i class="fa-solid fa-list-check"></i> My Submissions</a>
       <?php endif; ?>
       <a href="<?= BASE_URL ?>/logout.php" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>

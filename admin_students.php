@@ -30,6 +30,7 @@ if (!empty($_GET['course_id']))     { $where[] = 's.course_id = ?'; $params[] = 
 if (!empty($_GET['university_id'])) { $where[] = 's.university_id = ?'; $params[] = $_GET['university_id']; }
 if (!empty($_GET['session_id']))    { $where[] = 's.session_id = ?'; $params[] = $_GET['session_id']; }
 if (!empty($_GET['status']))        { $where[] = 's.status = ?'; $params[] = $_GET['status']; }
+if (!empty($_GET['reg_type']))      { $where[] = 's.registration_type = ?'; $params[] = $_GET['reg_type']; }
 if (!empty($_GET['staff_id']))      { $where[] = 's.created_by = ?'; $params[] = $_GET['staff_id']; }
 if (!empty($_GET['gender']))        { $where[] = 's.gender = ?'; $params[] = $_GET['gender']; }
 if (!empty($_GET['date_from']))     { $where[] = 'DATE(s.created_at) >= ?'; $params[] = $_GET['date_from']; }
@@ -62,10 +63,10 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="registrations_' . date('Y-m-d') . '.csv"');
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['Reg No', 'Name', 'Mobile', 'Email', 'Course', 'University', 'Session', 'Staff', 'Status', 'Fee Status', 'Date']);
+    fputcsv($out, ['Reg No', 'Type', 'Name', 'Mobile', 'Email', 'Course', 'University', 'Session', 'Staff', 'Status', 'Fee Status', 'Date']);
     foreach ($students as $s) {
         fputcsv($out, [
-            $s['registration_no'], $s['first_name'] . ' ' . $s['last_name'], $s['mobile'], $s['email'],
+            $s['registration_no'], ucfirst($s['registration_type']), $s['first_name'] . ' ' . $s['last_name'], $s['mobile'], $s['email'],
             $s['course_name'], $s['university_name'], $s['year_label'], $s['staff_name'],
             $s['status'], $s['fee_status'] ?? 'not paid', $s['created_at']
         ]);
@@ -137,6 +138,13 @@ $exportQs['export'] = 'csv';
   </div>
   <div class="row g-2 mt-1">
     <div class="col-md-2">
+      <select name="reg_type" class="form-select form-select-sm">
+        <option value="">Fresh + Re-Reg</option>
+        <option value="fresh" <?= (($_GET['reg_type'] ?? '') == 'fresh') ? 'selected' : '' ?>>Fresh Only</option>
+        <option value="re-registration" <?= (($_GET['reg_type'] ?? '') == 're-registration') ? 'selected' : '' ?>>Re-Registration Only</option>
+      </select>
+    </div>
+    <div class="col-md-2">
       <select name="staff_id" class="form-select form-select-sm">
         <option value="">All Staff</option>
         <?php foreach ($staffList as $st): ?>
@@ -180,7 +188,7 @@ $exportQs['export'] = 'csv';
         <thead>
           <tr>
             <th style="width:32px;"><input type="checkbox" id="selectAllRows"></th>
-            <th>Reg No</th><th>Name</th><th>Mobile</th><th>Course</th><th>University</th>
+            <th>Reg No</th><th>Type</th><th>Name</th><th>Mobile</th><th>Course</th><th>University</th>
             <th>Session</th><th>Staff</th><th>Status</th><th>Fee</th><th></th>
           </tr>
         </thead>
@@ -189,6 +197,7 @@ $exportQs['export'] = 'csv';
           <tr>
             <td><input type="checkbox" class="row-check" name="ids[]" value="<?= $s['id'] ?>"></td>
             <td class="reg-no"><?= e($s['registration_no']) ?></td>
+            <td><span class="badge bg-<?= $s['registration_type'] == 'fresh' ? 'primary' : 'info' ?>"><?= $s['registration_type'] == 'fresh' ? 'Fresh' : 'Re-Reg' ?></span></td>
             <td><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
             <td><?= e($s['mobile']) ?></td>
             <td><?= e($s['course_name'] ?? '-') ?></td>
@@ -204,7 +213,7 @@ $exportQs['export'] = 'csv';
           </tr>
           <?php endforeach; ?>
           <?php if (!$students): ?>
-            <tr><td colspan="11" class="text-center text-muted py-4">No records match the selected filters.</td></tr>
+            <tr><td colspan="12" class="text-center text-muted py-4">No records match the selected filters.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>

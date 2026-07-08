@@ -60,7 +60,9 @@ INSERT INTO sessions_years (year_label) VALUES ('2025-2026'), ('2026-2027');
 CREATE TABLE students (
   id INT AUTO_INCREMENT PRIMARY KEY,
   registration_no VARCHAR(30) UNIQUE NOT NULL,
-  created_by INT NOT NULL,               -- staff user who filled the form
+  registration_type ENUM('fresh','re-registration') NOT NULL DEFAULT 'fresh',
+  parent_student_id INT DEFAULT NULL,          -- for re-registration: points to the earlier record
+  created_by INT NOT NULL,               -- staff/admin user who filled the form
 
   -- Step 1: Personal details
   first_name VARCHAR(50) NOT NULL,
@@ -104,7 +106,8 @@ CREATE TABLE students (
   FOREIGN KEY (created_by) REFERENCES users(id),
   FOREIGN KEY (university_id) REFERENCES universities(id),
   FOREIGN KEY (course_id) REFERENCES courses(id),
-  FOREIGN KEY (session_id) REFERENCES sessions_years(id)
+  FOREIGN KEY (session_id) REFERENCES sessions_years(id),
+  FOREIGN KEY (parent_student_id) REFERENCES students(id)
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------

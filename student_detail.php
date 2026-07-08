@@ -66,10 +66,14 @@ require_once __DIR__ . '/includes/header.php';
       <div class="d-flex justify-content-between align-items-start mb-3">
         <div>
           <h5 class="mb-0"><?= e($student['first_name'] . ' ' . $student['last_name']) ?></h5>
-          <span class="text-muted small"><?= e($student['registration_no']) ?></span>
+          <span class="reg-no"><?= e($student['registration_no']) ?></span>
+          <span class="badge bg-<?= $student['registration_type'] == 'fresh' ? 'primary' : 'info' ?> ms-1"><?= $student['registration_type'] == 'fresh' ? 'Fresh' : 'Re-Registration' ?></span>
         </div>
         <?= statusBadge($student['status']) ?>
       </div>
+      <?php if ($student['registration_type'] === 're-registration' && $student['parent_student_id']): ?>
+        <div class="small text-muted mb-3">Continuing from <a href="student_detail.php?id=<?= $student['parent_student_id'] ?>">previous registration</a>.</div>
+      <?php endif; ?>
 
       <h6 class="text-primary mt-3">Personal Details</h6>
       <div class="row small mb-2">

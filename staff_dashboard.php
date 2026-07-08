@@ -61,8 +61,9 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </div>
 
-<div class="mb-3">
-  <a href="register_student.php" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> New Student Registration</a>
+<div class="mb-3 d-flex gap-2">
+  <a href="register_student.php" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Apply Fresh</a>
+  <a href="re_registration.php" class="btn btn-outline-primary"><i class="fa-solid fa-rotate"></i> Re-Registration</a>
 </div>
 
 <div class="table-card p-3">

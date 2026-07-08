@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/config.php';
-requireStaff();
+requireLogin();
 
 $pageTitle = 'My Submissions';
 $uid = $_SESSION['user_id'];
@@ -63,12 +63,13 @@ require_once __DIR__ . '/includes/header.php';
   <div class="table-responsive">
     <table class="table table-sm table-ledger align-middle">
       <thead class="table-light">
-        <tr><th>Reg No</th><th>Name</th><th>Course</th><th>Status</th><th>Fee</th><th>Date</th><th></th></tr>
+        <tr><th>Reg No</th><th>Type</th><th>Name</th><th>Course</th><th>Status</th><th>Fee</th><th>Date</th><th></th></tr>
       </thead>
       <tbody>
         <?php foreach ($students as $s): ?>
         <tr>
           <td class="reg-no"><?= e($s['registration_no']) ?></td>
+          <td><span class="badge bg-<?= $s['registration_type'] == 'fresh' ? 'primary' : 'info' ?>"><?= $s['registration_type'] == 'fresh' ? 'Fresh' : 'Re-Reg' ?></span></td>
           <td><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
           <td><?= e($s['course_name'] ?? '-') ?></td>
           <td><?= statusBadge($s['status']) ?></td>
@@ -83,7 +84,7 @@ require_once __DIR__ . '/includes/header.php';
         </tr>
         <?php endforeach; ?>
         <?php if (!$students): ?>
-          <tr><td colspan="7" class="text-center text-muted py-4">No submissions found.</td></tr>
+          <tr><td colspan="8" class="text-center text-muted py-4">No submissions found.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>

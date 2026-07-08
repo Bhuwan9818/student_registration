@@ -56,7 +56,11 @@ require_once __DIR__ . '/includes/header.php';
     <span class="eyebrow">Overview</span>
     <h4>Admission Dashboard</h4>
   </div>
-  <a href="admin_students.php" class="btn btn-primary btn-sm"><i class="fa-solid fa-users"></i> View All Registrations</a>
+  <div class="d-flex gap-2">
+    <a href="register_student.php" class="btn btn-primary btn-sm"><i class="fa-solid fa-user-plus"></i> Apply Fresh</a>
+    <a href="re_registration.php" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-rotate"></i> Re-Registration</a>
+    <a href="admin_students.php" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-users"></i> All Applications</a>
+  </div>
 </div>
 
 <div class="row g-3 mb-4">

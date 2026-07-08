@@ -25,7 +25,16 @@ changes needed.
   and view their own submitted forms (not other staff's).
 - **Multi-step registration wizard** (5 steps): Personal Details → Contact &
   Address → Guardian Details → Academic Background → Course Selection & Review.
-  Shows live seat-availability while picking a course.
+  Shows live seat-availability while picking a course. Available to **both
+  admin and staff** — labeled "Apply Fresh" in the sidebar.
+- **Re-Registration** — for existing *approved* students continuing into a
+  new session/year. Search by registration number, mobile, or name, pick the
+  student, choose the new session (and course/university if it changed), and
+  a new registration record is created with all personal/contact/academic
+  details carried forward automatically. Also available to both admin and
+  staff. Each re-registration is tagged and linked back to the original
+  record (visible on the student detail page), and routes straight to the
+  fee page afterward, same as a fresh registration.
 - **View all submissions** with filters: course, university, session/year,
   status, staff, gender, date range, and free-text search — plus a topbar
   quick-search from anywhere in the portal.
@@ -69,9 +78,15 @@ changes needed.
 ### Updating an existing install (you already had the portal running)
 
 Just replace your PHP/CSS/JS files with the ones in this package, then run
-`database/migration_v2.sql` in phpMyAdmin against your existing
-`admission_portal` database — it adds the `total_seats` column to `courses`
-and creates the new `activity_log` table without touching your existing data.
+whichever of these you haven't already, in order, against your existing
+`admission_portal` database:
+
+1. `database/migration_v2.sql` — adds `total_seats` on `courses` and the
+   `activity_log` table (skip if you already ran this before).
+2. `database/migration_v3.sql` — adds `registration_type` and
+   `parent_student_id` on `students` for Fresh vs Re-Registration support.
+
+Neither touches your existing data.
 
 ## Default login
 
@@ -87,12 +102,13 @@ corner → **Change Password**. This works for both admin and staff accounts.
 
 | Action                          | Admin | Staff |
 |----------------------------------|:-----:|:-----:|
-| Register a new student           |   —   |   ✅   |
+| Register a new student (Apply Fresh) |  ✅  |   ✅   |
+| Re-register an existing student for a new session | ✅ | ✅ |
 | View all registrations           |   ✅   |   —   |
 | View only their own registrations|   —   |   ✅   |
 | Filter/search registrations      |   ✅   |   ✅ (own only) |
 | Approve/reject a registration    |   ✅   |   —   |
-| Submit fee for a student they registered | — | ✅ |
+| Submit fee for a student they registered | ✅ | ✅ |
 | Verify/reject a fee submission   |   ✅   |   —   |
 | Create/disable staff accounts    |   ✅   |   —   |
 | Manage courses/universities/sessions | ✅ | — |
@@ -103,12 +119,13 @@ corner → **Change Password**. This works for both admin and staff accounts.
 admission-portal/
 ├── config/config.php          <- DB connection + auth helpers (edit DB creds here)
 ├── database/schema.sql        <- import this for a fresh install
-├── database/migration_v2.sql  <- run this if upgrading an existing install
+├── database/migration_v2.sql  <- run this if upgrading from the original build
+├── database/migration_v3.sql  <- run this to add Fresh vs Re-Registration support
 ├── includes/                  <- shared header/footer/sidebar
 ├── assets/css/style.css       <- all styling (design tokens at the top)
 ├── assets/js/script.js        <- sidebar drawer, fee form toggle, bulk-select
 ├── uploads/                   <- photos, marksheets, fee proofs get saved here
-├── login.php / logout.php / index.php
+├── login.php / logout.php / index.php / change_password.php
 ├── admin_dashboard.php        <- admin home: stats, charts, activity feed
 ├── admin_students.php         <- all registrations, filters, bulk actions, CSV export
 ├── admin_fees.php             <- fee verification queue
@@ -116,7 +133,8 @@ admission-portal/
 ├── admin_master.php           <- manage courses/universities/sessions + seat caps
 ├── admin_activity.php         <- full audit trail / activity log
 ├── staff_dashboard.php        <- staff home with their own stats
-├── register_student.php       <- the 5-step registration wizard (with seat check)
+├── register_student.php       <- the 5-step "Apply Fresh" wizard (with seat check)
+├── re_registration.php        <- search + re-register an existing student
 ├── submit_fee.php             <- fee submission (manual or upload)
 ├── my_students.php            <- staff's own submissions list
 ├── student_detail.php         <- shared detail view (admin sees approve/reject
