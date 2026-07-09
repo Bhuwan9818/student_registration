@@ -90,7 +90,7 @@ $fee = $feeStmt->fetch();
       <div class="flex-fill">
         <h4 class="mb-1"><?= e($student['first_name'] . ' ' . $student['last_name']) ?></h4>
         <div class="mb-2"><?= statusBadge($student['status']) ?></div>
-        <div class="slip-row"><span class="label">Course Applied</span><span><?= e($student['course_name'] ?? '-') ?></span></div>
+        <div class="slip-row"><span class="label">Course Applied</span><span><?= e($student['course_name'] ?? '-') ?> — Semester <?= e($student['semester_no']) ?></span></div>
         <div class="slip-row"><span class="label">University</span><span><?= e($student['university_name'] ?? '-') ?></span></div>
         <div class="slip-row"><span class="label">Session</span><span><?= e($student['year_label'] ?? '-') ?></span></div>
       </div>

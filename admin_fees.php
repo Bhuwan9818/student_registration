@@ -1,7 +1,9 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 requireAdmin();
+requireUniversity($pdo);
 
+$activeUni = getActiveUniversity($pdo);
 $pageTitle = 'Fee Verification';
 
 // Handle verify/reject action (also called from student_detail.php)
@@ -27,18 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fee_action'])) {
 }
 
 $filterStatus = $_GET['status'] ?? 'pending';
-$where = '';
-$params = [];
+$where = ['s.university_id = ?'];
+$params = [$activeUni['id']];
 if ($filterStatus !== 'all') {
-    $where = 'WHERE f.status = ?';
+    $where[] = 'f.status = ?';
     $params[] = $filterStatus;
 }
+$whereSql = 'WHERE ' . implode(' AND ', $where);
 
 $stmt = $pdo->prepare("SELECT f.*, s.registration_no, s.first_name, s.last_name, u.full_name as submitted_by_name
                         FROM fees f
                         JOIN students s ON s.id = f.student_id
                         LEFT JOIN users u ON u.id = f.submitted_by
-                        $where
+                        $whereSql
                         ORDER BY f.submitted_at DESC");
 $stmt->execute($params);
 $fees = $stmt->fetchAll();
@@ -57,6 +60,11 @@ require_once __DIR__ . '/includes/header.php';
     <a href="?status=rejected" class="btn btn-outline-primary <?= $filterStatus == 'rejected' ? 'active' : '' ?>">Rejected</a>
     <a href="?status=all" class="btn btn-outline-primary <?= $filterStatus == 'all' ? 'active' : '' ?>">All</a>
   </div>
+</div>
+
+<div class="alert alert-light border small mb-3 d-flex justify-content-between align-items-center">
+  <span><i class="fa-solid fa-building-columns text-muted me-1"></i> Showing <strong><?= e($activeUni['name']) ?></strong> fee records</span>
+  <a href="choose_university.php?return=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="small">Change university</a>
 </div>
 
 <div class="table-card p-3">

@@ -1,7 +1,9 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 requireLogin();
+requireUniversity($pdo);
 
+$activeUni = getActiveUniversity($pdo);
 $pageTitle = 'New Student Registration';
 
 // Initialize wizard session storage
@@ -60,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($step === 5) {
-        $_SESSION['wizard']['university_id'] = $_POST['university_id'];
         $_SESSION['wizard']['course_id']     = $_POST['course_id'];
         $_SESSION['wizard']['session_id']    = $_POST['session_id'];
 
@@ -74,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         mobile, alt_mobile, email, address, city, state, pincode,
                         father_name, mother_name, guardian_mobile,
                         last_qualification, board_university, passing_year, percentage, marksheet_path,
-                        university_id, course_id, session_id
-                    ) VALUES (?,?,?,?,?,?,?,?,?,?, ?,?,?,?,?,?,?, ?,?,?, ?,?,?,?,?, ?,?,?)";
+                        university_id, course_id, session_id, semester_no
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?, ?,?,?,?,?,?,?, ?,?,?, ?,?,?,?,?, ?,?,?,?)";
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
@@ -83,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $w['mobile'], $w['alt_mobile'], $w['email'], $w['address'], $w['city'], $w['state'], $w['pincode'],
                 $w['father_name'], $w['mother_name'], $w['guardian_mobile'],
                 $w['last_qualification'], $w['board_university'], $w['passing_year'], $w['percentage'], $w['marksheet_path'] ?? null,
-                $w['university_id'], $w['course_id'], $w['session_id']
+                $activeUni['id'], $w['course_id'], $w['session_id'], 1
             ]);
 
             $newStudentId = $pdo->lastInsertId();
@@ -100,12 +101,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $w = $_SESSION['wizard']; // shorthand for pre-filling fields on back navigation
 
-$courses      = $pdo->query("SELECT * FROM courses WHERE status='active' ORDER BY name")->fetchAll();
-$universities = $pdo->query("SELECT * FROM universities WHERE status='active' ORDER BY name")->fetchAll();
+$courses      = $pdo->prepare("SELECT * FROM courses WHERE status='active' AND university_id = ? ORDER BY name");
+$courses->execute([$activeUni['id']]);
+$courses      = $courses->fetchAll();
 $sessionsYrs  = $pdo->query("SELECT * FROM sessions_years WHERE status='active' ORDER BY year_label DESC")->fetchAll();
 
 require_once __DIR__ . '/includes/header.php';
 ?>
+
+<div class="alert alert-light border small mb-3 d-flex justify-content-between align-items-center">
+  <span><i class="fa-solid fa-building-columns text-muted me-1"></i> Registering for <strong><?= e($activeUni['name']) ?></strong></span>
+  <a href="choose_university.php?return=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="small">Change university</a>
+</div>
 
 <div class="table-card p-4">
 
@@ -260,16 +267,7 @@ require_once __DIR__ . '/includes/header.php';
   <form method="POST">
     <h5 class="mb-3">Step 5: Course Selection & Review</h5>
     <div class="row g-3 mb-4">
-      <div class="col-md-4">
-        <label class="form-label">University *</label>
-        <select name="university_id" class="form-select" required>
-          <option value="">Select University</option>
-          <?php foreach ($universities as $u): ?>
-            <option value="<?= $u['id'] ?>" <?= (($w['university_id'] ?? '') == $u['id']) ? 'selected' : '' ?>><?= e($u['name']) ?></option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <label class="form-label">Course *</label>
         <select name="course_id" id="courseSelect" class="form-select" required>
           <option value="">Select Course</option>
@@ -283,8 +281,11 @@ require_once __DIR__ . '/includes/header.php';
           <?php endforeach; ?>
         </select>
         <div id="seatNote" class="small mt-1"></div>
+        <?php if (!$courses): ?>
+          <div class="small text-danger mt-1">No active courses found for <?= e($activeUni['name']) ?>. Ask an admin to add one in Master Data.</div>
+        <?php endif; ?>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <label class="form-label">Session *</label>
         <select name="session_id" class="form-select" required>
           <option value="">Select Session</option>

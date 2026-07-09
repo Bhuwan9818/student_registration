@@ -1,31 +1,51 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 requireAdmin();
+requireUniversity($pdo);
 
+$activeUni = getActiveUniversity($pdo);
+$univId = $activeUni['id'];
 $pageTitle = 'Admin Dashboard';
 
-$totalStudents   = $pdo->query("SELECT COUNT(*) c FROM students")->fetch()['c'];
-$approved        = $pdo->query("SELECT COUNT(*) c FROM students WHERE status='approved'")->fetch()['c'];
-$pendingReview   = $pdo->query("SELECT COUNT(*) c FROM students WHERE status='submitted'")->fetch()['c'];
-$pendingFees     = $pdo->query("SELECT COUNT(*) c FROM fees WHERE status='pending'")->fetch()['c'];
-$totalCollected  = $pdo->query("SELECT COALESCE(SUM(amount),0) s FROM fees WHERE status='verified'")->fetch()['s'];
+$totalStudents   = $pdo->prepare("SELECT COUNT(*) c FROM students WHERE university_id = ?");
+$totalStudents->execute([$univId]); $totalStudents = $totalStudents->fetch()['c'];
+
+$approved        = $pdo->prepare("SELECT COUNT(*) c FROM students WHERE university_id = ? AND status='approved'");
+$approved->execute([$univId]); $approved = $approved->fetch()['c'];
+
+$pendingReview   = $pdo->prepare("SELECT COUNT(*) c FROM students WHERE university_id = ? AND status='submitted'");
+$pendingReview->execute([$univId]); $pendingReview = $pendingReview->fetch()['c'];
+
+$pendingFees     = $pdo->prepare("SELECT COUNT(*) c FROM fees f JOIN students s ON s.id = f.student_id WHERE s.university_id = ? AND f.status='pending'");
+$pendingFees->execute([$univId]); $pendingFees = $pendingFees->fetch()['c'];
+
+$totalCollected  = $pdo->prepare("SELECT COALESCE(SUM(f.amount),0) s FROM fees f JOIN students s ON s.id = f.student_id WHERE s.university_id = ? AND f.status='verified'");
+$totalCollected->execute([$univId]); $totalCollected = $totalCollected->fetch()['s'];
+
 $totalStaff      = $pdo->query("SELECT COUNT(*) c FROM users WHERE role='staff'")->fetch()['c'];
 
-$recent = $pdo->query("SELECT s.*, u.full_name as staff_name, c.name as course_name
+$recent = $pdo->prepare("SELECT s.*, u.full_name as staff_name, c.name as course_name
                         FROM students s
                         LEFT JOIN users u ON u.id = s.created_by
                         LEFT JOIN courses c ON c.id = s.course_id
-                        ORDER BY s.created_at DESC LIMIT 8")->fetchAll();
+                        WHERE s.university_id = ?
+                        ORDER BY s.created_at DESC LIMIT 8");
+$recent->execute([$univId]);
+$recent = $recent->fetchAll();
 
-// Registrations by course (for chart)
-$byCourse = $pdo->query("SELECT c.name, COUNT(s.id) as cnt
+// Registrations by course (for chart) — this university only
+$byCourse = $pdo->prepare("SELECT c.name, COUNT(s.id) as cnt
                           FROM courses c LEFT JOIN students s ON s.course_id = c.id
-                          WHERE c.status='active' GROUP BY c.id ORDER BY cnt DESC")->fetchAll();
+                          WHERE c.status='active' AND c.university_id = ? GROUP BY c.id ORDER BY cnt DESC");
+$byCourse->execute([$univId]);
+$byCourse = $byCourse->fetchAll();
 
-// Registrations trend, last 14 days
-$trend = $pdo->query("SELECT DATE(created_at) d, COUNT(*) c FROM students
-                       WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
-                       GROUP BY DATE(created_at)")->fetchAll();
+// Registrations trend, last 14 days — this university only
+$trend = $pdo->prepare("SELECT DATE(created_at) d, COUNT(*) c FROM students
+                       WHERE university_id = ? AND created_at >= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+                       GROUP BY DATE(created_at)");
+$trend->execute([$univId]);
+$trend = $trend->fetchAll();
 $trendMap = [];
 foreach ($trend as $t) { $trendMap[$t['d']] = $t['c']; }
 $trendLabels = []; $trendData = [];
@@ -35,7 +55,7 @@ for ($i = 13; $i >= 0; $i--) {
     $trendData[] = $trendMap[$d] ?? 0;
 }
 
-// Recent activity for the sidebar feed
+// Recent activity for the sidebar feed (global — spans all universities)
 $recentActivity = $pdo->query("SELECT a.*, u.full_name as user_name, s.registration_no
                                 FROM activity_log a
                                 LEFT JOIN users u ON u.id = a.user_id
@@ -61,6 +81,11 @@ require_once __DIR__ . '/includes/header.php';
     <a href="re_registration.php" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-rotate"></i> Re-Registration</a>
     <a href="admin_students.php" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-users"></i> All Applications</a>
   </div>
+</div>
+
+<div class="alert alert-light border small mb-3 d-flex justify-content-between align-items-center">
+  <span><i class="fa-solid fa-building-columns text-muted me-1"></i> Showing figures for <strong><?= e($activeUni['name']) ?></strong></span>
+  <a href="choose_university.php?return=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="small">Change university</a>
 </div>
 
 <div class="row g-3 mb-4">

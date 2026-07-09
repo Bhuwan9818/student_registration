@@ -25,7 +25,7 @@ INSERT INTO users (full_name, username, email, password, role, status) VALUES
 ('Super Admin', 'admin', 'admin@example.com', '$2b$12$0vmOb50qKU04BS13zL/srexQUvbpVR1goeCU6.oVtwHv9CB448LkC', 'admin', 'active');
 
 -- ------------------------------------------------------------
--- Master data: Universities / Courses / Sessions (Years)
+-- Universities
 -- ------------------------------------------------------------
 CREATE TABLE universities (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -34,15 +34,36 @@ CREATE TABLE universities (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- ------------------------------------------------------------
+-- Courses — each course belongs to exactly one university
+-- ------------------------------------------------------------
 CREATE TABLE courses (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  university_id INT NOT NULL,
   name VARCHAR(150) NOT NULL,
   duration_years INT DEFAULT 1,
   total_seats INT DEFAULT NULL,
   status ENUM('active','inactive') NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (university_id) REFERENCES universities(id)
 ) ENGINE=InnoDB;
 
+-- ------------------------------------------------------------
+-- Semester-wise fee structure — one row per course per semester
+-- (number of semesters = duration_years * 2, standard convention)
+-- ------------------------------------------------------------
+CREATE TABLE course_fees (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT NOT NULL,
+  semester_no INT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+  UNIQUE KEY uniq_course_sem (course_id, semester_no),
+  FOREIGN KEY (course_id) REFERENCES courses(id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- Sessions / academic years
+-- ------------------------------------------------------------
 CREATE TABLE sessions_years (
   id INT AUTO_INCREMENT PRIMARY KEY,
   year_label VARCHAR(20) NOT NULL,
@@ -50,8 +71,26 @@ CREATE TABLE sessions_years (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- ---- Seed data: a couple of real-shaped universities with their own courses ----
 INSERT INTO universities (name) VALUES ('Delhi University'), ('IGNOU'), ('IP University');
-INSERT INTO courses (name, duration_years, total_seats) VALUES ('B.Tech', 4, 120), ('BBA', 3, 60), ('BCA', 3, 60), ('MBA', 2, 40);
+
+INSERT INTO courses (university_id, name, duration_years, total_seats) VALUES
+  (1, 'B.Tech (Computer Science)', 4, 120),
+  (1, 'B.Tech (Mechanical)', 4, 90),
+  (1, 'BBA', 3, 60),
+  (1, 'BCA', 3, 60),
+  (1, 'MBA', 2, 40),
+  (2, 'BA (Programme)', 3, 200),
+  (2, 'MA (English)', 2, 80),
+  (3, 'B.Com (Hons)', 3, 80),
+  (3, 'BCA', 3, 60);
+
+-- Example semester-wise fee structure for a couple of courses (admin can edit/add the rest)
+INSERT INTO course_fees (course_id, semester_no, amount) VALUES
+  (1, 1, 55000), (1, 2, 55000), (1, 3, 58000), (1, 4, 58000),
+  (1, 5, 60000), (1, 6, 60000), (1, 7, 62000), (1, 8, 62000),
+  (3, 1, 35000), (3, 2, 35000), (3, 3, 37000), (3, 4, 37000), (3, 5, 38000), (3, 6, 38000);
+
 INSERT INTO sessions_years (year_label) VALUES ('2025-2026'), ('2026-2027');
 
 -- ------------------------------------------------------------
@@ -98,6 +137,7 @@ CREATE TABLE students (
   university_id INT DEFAULT NULL,
   course_id INT DEFAULT NULL,
   session_id INT DEFAULT NULL,
+  semester_no INT NOT NULL DEFAULT 1,     -- which semester this registration covers
 
   status ENUM('submitted','approved','rejected') NOT NULL DEFAULT 'submitted',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

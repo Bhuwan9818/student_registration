@@ -60,6 +60,44 @@ function requireStaff() {
     }
 }
 
+// Returns the currently active university row, or null if none is selected
+function getActiveUniversity($pdo) {
+    if (empty($_SESSION['active_university_id'])) return null;
+    $stmt = $pdo->prepare("SELECT * FROM universities WHERE id = ?");
+    $stmt->execute([$_SESSION['active_university_id']]);
+    return $stmt->fetch() ?: null;
+}
+
+// Ensures a university is selected before letting the user proceed;
+// otherwise sends them to the picker (which returns them here afterward).
+function requireUniversity($pdo) {
+    if (empty($_SESSION['active_university_id'])) {
+        $return = urlencode($_SERVER['REQUEST_URI'] ?? '');
+        redirect('choose_university.php?return=' . $return);
+    }
+    // Guard against a stale/deleted university id lingering in session
+    $stmt = $pdo->prepare("SELECT id FROM universities WHERE id = ? AND status = 'active'");
+    $stmt->execute([$_SESSION['active_university_id']]);
+    if (!$stmt->fetch()) {
+        unset($_SESSION['active_university_id']);
+        $return = urlencode($_SERVER['REQUEST_URI'] ?? '');
+        redirect('choose_university.php?return=' . $return);
+    }
+}
+
+// Total semesters for a course, based on its duration (standard 2 semesters/year)
+function courseTotalSemesters($course) {
+    return max(1, (int)$course['duration_years']) * 2;
+}
+
+// Fee amount defined for a specific course + semester, or null if not set
+function getSemesterFee($pdo, $courseId, $semesterNo) {
+    $stmt = $pdo->prepare("SELECT amount FROM course_fees WHERE course_id = ? AND semester_no = ?");
+    $stmt->execute([$courseId, $semesterNo]);
+    $val = $stmt->fetchColumn();
+    return $val !== false ? $val : null;
+}
+
 // ---------------- General helpers ----------------
 
 function e($str) {

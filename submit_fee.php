@@ -14,6 +14,8 @@ if (!$student) {
     redirect('my_students.php');
 }
 
+$expectedFee = $student['course_id'] ? getSemesterFee($pdo, $student['course_id'], $student['semester_no']) : null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $amount    = (float)$_POST['amount'];
     $mode      = $_POST['mode'];
@@ -53,16 +55,22 @@ require_once __DIR__ . '/includes/header.php';
 
 <div class="table-card p-4" style="max-width:650px;">
   <h5 class="mb-1">Submit Fee</h5>
-  <p class="text-muted small mb-4">
+  <p class="text-muted small mb-2">
     For <strong><?= e($student['first_name'] . ' ' . $student['last_name']) ?></strong>
-    (<?= e($student['registration_no']) ?>)
+    (<?= e($student['registration_no']) ?>) — Semester <?= $student['semester_no'] ?>
   </p>
+  <?php if ($expectedFee !== null): ?>
+    <div class="alert alert-light border small mb-3">
+      Expected fee for Semester <?= $student['semester_no'] ?>: <strong>₹<?= number_format($expectedFee, 2) ?></strong>
+      <span class="text-muted">(as per the fee structure — adjust if this student's amount differs)</span>
+    </div>
+  <?php endif; ?>
 
   <form method="POST" enctype="multipart/form-data">
     <div class="row g-3 mb-3">
       <div class="col-md-6">
         <label class="form-label">Fee Amount (₹) *</label>
-        <input type="number" step="0.01" name="amount" class="form-control" required>
+        <input type="number" step="0.01" name="amount" class="form-control" value="<?= $expectedFee !== null ? e($expectedFee) : '' ?>" required>
       </div>
       <div class="col-md-6">
         <label class="form-label">Payment Mode *</label>

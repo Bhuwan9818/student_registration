@@ -1,7 +1,9 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 requireAdmin();
+requireUniversity($pdo);
 
+$activeUni = getActiveUniversity($pdo);
 $pageTitle = 'All Registrations';
 
 // ---- Bulk approve / reject ----
@@ -22,12 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_action']) && !em
     redirect('admin_students.php');
 }
 
-// ---- Build filter conditions dynamically ----
-$where  = [];
-$params = [];
+// ---- Build filter conditions dynamically (always scoped to the active university) ----
+$where  = ['s.university_id = ?'];
+$params = [$activeUni['id']];
 
 if (!empty($_GET['course_id']))     { $where[] = 's.course_id = ?'; $params[] = $_GET['course_id']; }
-if (!empty($_GET['university_id'])) { $where[] = 's.university_id = ?'; $params[] = $_GET['university_id']; }
 if (!empty($_GET['session_id']))    { $where[] = 's.session_id = ?'; $params[] = $_GET['session_id']; }
 if (!empty($_GET['status']))        { $where[] = 's.status = ?'; $params[] = $_GET['status']; }
 if (!empty($_GET['reg_type']))      { $where[] = 's.registration_type = ?'; $params[] = $_GET['reg_type']; }
@@ -41,7 +42,7 @@ if (!empty($_GET['q'])) {
     array_push($params, $like, $like, $like, $like);
 }
 
-$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$whereSql = 'WHERE ' . implode(' AND ', $where);
 
 $sql = "SELECT s.*, u.full_name as staff_name, c.name as course_name, un.name as university_name,
                sy.year_label,
@@ -75,8 +76,9 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     exit;
 }
 
-$courses      = $pdo->query("SELECT * FROM courses WHERE status='active' ORDER BY name")->fetchAll();
-$universities = $pdo->query("SELECT * FROM universities WHERE status='active' ORDER BY name")->fetchAll();
+$courses      = $pdo->prepare("SELECT * FROM courses WHERE status='active' AND university_id = ? ORDER BY name");
+$courses->execute([$activeUni['id']]);
+$courses      = $courses->fetchAll();
 $sessionsYrs  = $pdo->query("SELECT * FROM sessions_years WHERE status='active' ORDER BY year_label DESC")->fetchAll();
 $staffList    = $pdo->query("SELECT id, full_name FROM users WHERE role='staff' ORDER BY full_name")->fetchAll();
 
@@ -95,6 +97,11 @@ $exportQs['export'] = 'csv';
   <a href="?<?= http_build_query($exportQs) ?>" class="btn btn-gold btn-sm"><i class="fa-solid fa-file-arrow-down"></i> Export CSV</a>
 </div>
 
+<div class="alert alert-light border small mb-3 d-flex justify-content-between align-items-center">
+  <span><i class="fa-solid fa-building-columns text-muted me-1"></i> Showing <strong><?= e($activeUni['name']) ?></strong> registrations</span>
+  <a href="choose_university.php?return=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="small">Change university</a>
+</div>
+
 <form method="GET" class="table-card p-3 mb-3">
   <div class="row g-2">
     <div class="col-md-3">
@@ -105,14 +112,6 @@ $exportQs['export'] = 'csv';
         <option value="">All Courses</option>
         <?php foreach ($courses as $c): ?>
           <option value="<?= $c['id'] ?>" <?= (($_GET['course_id'] ?? '') == $c['id']) ? 'selected' : '' ?>><?= e($c['name']) ?></option>
-        <?php endforeach; ?>
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="university_id" class="form-select form-select-sm">
-        <option value="">All Universities</option>
-        <?php foreach ($universities as $u): ?>
-          <option value="<?= $u['id'] ?>" <?= (($_GET['university_id'] ?? '') == $u['id']) ? 'selected' : '' ?>><?= e($u['name']) ?></option>
         <?php endforeach; ?>
       </select>
     </div>
@@ -188,7 +187,7 @@ $exportQs['export'] = 'csv';
         <thead>
           <tr>
             <th style="width:32px;"><input type="checkbox" id="selectAllRows"></th>
-            <th>Reg No</th><th>Type</th><th>Name</th><th>Mobile</th><th>Course</th><th>University</th>
+            <th>Reg No</th><th>Type</th><th>Name</th><th>Mobile</th><th>Course</th>
             <th>Session</th><th>Staff</th><th>Status</th><th>Fee</th><th></th>
           </tr>
         </thead>
@@ -201,7 +200,6 @@ $exportQs['export'] = 'csv';
             <td><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
             <td><?= e($s['mobile']) ?></td>
             <td><?= e($s['course_name'] ?? '-') ?></td>
-            <td><?= e($s['university_name'] ?? '-') ?></td>
             <td><?= e($s['year_label'] ?? '-') ?></td>
             <td><?= e($s['staff_name'] ?? '-') ?></td>
             <td><?= statusBadge($s['status']) ?></td>
@@ -213,7 +211,7 @@ $exportQs['export'] = 'csv';
           </tr>
           <?php endforeach; ?>
           <?php if (!$students): ?>
-            <tr><td colspan="12" class="text-center text-muted py-4">No records match the selected filters.</td></tr>
+            <tr><td colspan="11" class="text-center text-muted py-4">No records match the selected filters.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>

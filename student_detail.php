@@ -114,6 +114,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-md-4"><strong>University:</strong> <?= e($student['university_name']) ?></div>
         <div class="col-md-4"><strong>Course:</strong> <?= e($student['course_name']) ?></div>
         <div class="col-md-4"><strong>Session:</strong> <?= e($student['year_label']) ?></div>
+        <div class="col-md-4"><strong>Semester:</strong> <?= e($student['semester_no']) ?></div>
       </div>
 
       <div class="text-muted small mt-3">Submitted by <?= e($student['staff_name']) ?> on <?= date('d M Y, h:i A', strtotime($student['created_at'])) ?></div>

@@ -1,12 +1,14 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 requireLogin();
+requireUniversity($pdo);
 
+$activeUni = getActiveUniversity($pdo);
 $pageTitle = 'My Submissions';
 $uid = $_SESSION['user_id'];
 
-$where = ['s.created_by = ?'];
-$params = [$uid];
+$where = ['s.created_by = ?', 's.university_id = ?'];
+$params = [$uid, $activeUni['id']];
 
 if (!empty($_GET['status'])) {
     $where[] = 's.status = ?';
@@ -37,6 +39,11 @@ require_once __DIR__ . '/includes/header.php';
     <span class="eyebrow">Admissions</span>
     <h4>My Submissions</h4>
   </div>
+</div>
+
+<div class="alert alert-light border small mb-3 d-flex justify-content-between align-items-center">
+  <span><i class="fa-solid fa-building-columns text-muted me-1"></i> Showing submissions for <strong><?= e($activeUni['name']) ?></strong></span>
+  <a href="choose_university.php?return=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="small">Change university</a>
 </div>
 
 <form method="GET" class="table-card p-3 mb-3">

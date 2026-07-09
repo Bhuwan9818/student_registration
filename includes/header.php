@@ -5,6 +5,7 @@ foreach (explode(' ', trim($_SESSION['full_name'] ?? '')) as $part) {
     $initials .= strtoupper(substr($part, 0, 1));
 }
 $initials = substr($initials, 0, 2) ?: 'U';
+$activeUni = getActiveUniversity($pdo);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -70,6 +71,11 @@ $initials = substr($initials, 0, 2) ?: 'U';
       </form>
 
       <div class="ms-auto d-flex align-items-center gap-3">
+        <a href="<?= BASE_URL ?>/choose_university.php?return=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
+          <i class="fa-solid fa-building-columns"></i>
+          <span class="d-none d-md-inline"><?= $activeUni ? e($activeUni['name']) : 'Select University' ?></span>
+          <span class="d-inline d-md-none">University</span>
+        </a>
         <div class="dropdown">
           <button class="btn p-0 border-0 bg-transparent user-chip dropdown-toggle" type="button" data-bs-toggle="dropdown">
             <div class="user-avatar"><?= e($initials) ?></div>

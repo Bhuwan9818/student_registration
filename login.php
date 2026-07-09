@@ -22,6 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id']   = $user['id'];
             $_SESSION['full_name'] = $user['full_name'];
             $_SESSION['role']      = $user['role'];
+            if (empty($_SESSION['active_university_id'])) {
+                redirect('choose_university.php');
+            }
             redirect($user['role'] === 'admin' ? 'admin_dashboard.php' : 'staff_dashboard.php');
         }
     } else {
