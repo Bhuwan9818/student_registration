@@ -45,7 +45,8 @@ $activeUni = getActiveUniversity($pdo);
         <a href="<?= BASE_URL ?>/admin_activity.php" class="<?= active('admin_activity.php') ?>"><i class="fa-solid fa-clock-rotate-left"></i> Activity Log</a>
 
         <span class="sidebar-section-label">Administration</span>
-        <a href="<?= BASE_URL ?>/admin_users.php" class="<?= active('admin_users.php') ?>"><i class="fa-solid fa-user-shield"></i> Manage Staff</a>
+        <a href="<?= BASE_URL ?>/admin_centers.php" class="<?= active('admin_centers.php') ?>"><i class="fa-solid fa-building-user"></i> Centers</a>
+        <a href="<?= BASE_URL ?>/admin_subcenters.php" class="<?= active('admin_subcenters.php') ?>"><i class="fa-solid fa-sitemap"></i> Sub-Centers</a>
         <a href="<?= BASE_URL ?>/admin_master.php" class="<?= active('admin_master.php') ?>"><i class="fa-solid fa-sliders"></i> Master Data</a>
       <?php else: ?>
         <span class="sidebar-section-label">Overview</span>
@@ -85,8 +86,10 @@ $activeUni = getActiveUniversity($pdo);
             </div>
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
+            <?php if (isAdmin()): ?>
             <li><a class="dropdown-item" href="<?= BASE_URL ?>/change_password.php"><i class="fa-solid fa-key me-2"></i> Change Password</a></li>
             <li><hr class="dropdown-divider"></li>
+            <?php endif; ?>
             <li><a class="dropdown-item text-danger" href="<?= BASE_URL ?>/logout.php"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</a></li>
           </ul>
         </div>

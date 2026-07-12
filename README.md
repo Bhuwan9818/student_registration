@@ -51,9 +51,23 @@ reflects that until they switch.
 
 - **Admin login** — full access to everything below, across all universities
   (by switching between them).
-- **Staff logins** — created by admin; can only register students, submit
-  fees, and view their own submitted forms (not other staff's), scoped to
-  whichever university they currently have active.
+- **Centers & Sub-Centers** — admin creates Center accounts (the primary
+  registration accounts, formerly called "staff"). Each Center can also have
+  Sub-Center accounts working under it, created by admin and handed off to
+  whoever the Center wants to delegate to. Sub-Centers have identical
+  permissions to Centers (registration, fee submission, viewing their own
+  work) but everything they do is tracked separately: their registrations
+  show up under **Sub-Centers**, a Center's own registrations show up under
+  **Centers**, and admin can always see which Center a given Sub-Center
+  belongs to (on the Sub-Centers page, and next to their name anywhere their
+  registrations appear).
+- **Per-Center / per-Sub-Center reports** — both the Centers and Sub-Centers
+  pages show, at a glance, each account's total registrations, online fees
+  collected, and offline fees collected (online = Online transfer/UPI/Card;
+  offline = Cash/Cheque). Clicking through to a **Report** page shows the
+  same three figures as stat cards, the full list of that account's
+  registrations with fee channel per student, and a **Download Report (CSV)**
+  button for that specific Center or Sub-Center.
 - **Multi-step registration wizard** (5 steps): Personal Details → Contact &
   Address → Guardian Details → Academic Background → Course Selection &
   Review. Course list is scoped to the active university, shows live
@@ -133,6 +147,9 @@ whichever of these you haven't already, **in order**, against your existing
    your first university by default — go to Master Data afterward (with that
    university active) to review them, and move any to the correct
    university by re-creating them there if needed.
+4. `database/migration_v5.sql` — adds `parent_user_id` on `users` for the
+   Centers/Sub-Centers hierarchy. Every existing staff account becomes a
+   Center automatically (nothing to fix up here).
 
 None of these delete existing data.
 
@@ -144,24 +161,32 @@ Password: Admin@123
 ```
 
 **Change this immediately** — once logged in, click your name in the top-right
-corner → **Change Password**. This works for both admin and staff accounts.
+corner → **Change Password**. Only admin has self-service password changes;
+Center and Sub-Center passwords are set/reset by admin from the Centers or
+Sub-Centers page (the "Reset Pwd" button on each account).
 
 ## Roles at a glance
 
-| Action                          | Admin | Staff |
-|----------------------------------|:-----:|:-----:|
-| Switch active university         |   ✅   |   ✅   |
-| Register a new student (Apply Fresh) |  ✅  |   ✅   |
-| Re-register an existing student for a new session | ✅ | ✅ |
-| View all registrations (active university) |  ✅  |   —   |
-| View only their own registrations|   —   |   ✅   |
-| Filter/search registrations      |   ✅   |   ✅ (own only) |
-| Approve/reject a registration    |   ✅   |   —   |
-| Submit fee for a student they registered | ✅ | ✅ |
-| Verify/reject a fee submission   |   ✅   |   —   |
-| Create/disable staff accounts    |   ✅   |   —   |
-| Manage universities              |   ✅   |   —   |
-| Manage courses/seat caps/fee structure (active university) | ✅ | — |
+| Action                          | Admin | Center | Sub-Center |
+|----------------------------------|:-----:|:-----:|:-----:|
+| Switch active university         |   ✅   |   ✅   |   ✅   |
+| Register a new student (Apply Fresh) |  ✅  |   ✅   |   ✅   |
+| Re-register an existing student for a new session | ✅ | ✅ | ✅ |
+| View all registrations (active university) |  ✅  |   —   |   —   |
+| View only their own registrations|   —   |   ✅   |   ✅   |
+| Filter/search registrations      |   ✅   |   ✅ (own only) | ✅ (own only) |
+| Approve/reject a registration    |   ✅   |   —   |   —   |
+| Submit fee for a student they registered | ✅ | ✅ | ✅ |
+| Verify/reject a fee submission   |   ✅   |   —   |   —   |
+| Create/disable Center accounts   |   ✅   |   —   |   —   |
+| Create/disable Sub-Center accounts (under a Center) | ✅ | — | — |
+| Manage universities              |   ✅   |   —   |   —   |
+| Manage courses/seat caps/fee structure (active university) | ✅ | — | — |
+
+Centers and Sub-Centers have identical day-to-day permissions — the only
+difference is that admin can see which Center a Sub-Center belongs to, and
+their registrations are tracked in separate lists (Centers page vs.
+Sub-Centers page) for reporting purposes.
 
 ## Folder structure
 
@@ -172,6 +197,7 @@ admission-portal/
 ├── database/migration_v2.sql  <- run if upgrading from the original build
 ├── database/migration_v3.sql  <- run to add Fresh vs Re-Registration support
 ├── database/migration_v4.sql  <- run to add multi-university courses + fee structure
+├── database/migration_v5.sql  <- run to add Centers/Sub-Centers hierarchy
 ├── includes/                  <- shared header/footer/sidebar (incl. university switcher)
 ├── assets/css/style.css       <- all styling (design tokens at the top)
 ├── assets/img/logo.png        <- VS Academy logo (swap this file to rebrand)
@@ -182,7 +208,10 @@ admission-portal/
 ├── admin_dashboard.php        <- admin home: stats, charts, activity feed (scoped)
 ├── admin_students.php         <- all registrations, filters, bulk actions, CSV export (scoped)
 ├── admin_fees.php             <- fee verification queue (scoped)
-├── admin_users.php            <- create/disable staff, reset passwords
+├── admin_centers.php          <- create/disable Center accounts, reset passwords
+├── center_detail.php          <- per-Center report: registrations, online/offline fees, CSV export
+├── admin_subcenters.php       <- create/disable Sub-Center accounts (under a Center)
+├── subcenter_detail.php       <- per-Sub-Center report: registrations, online/offline fees, CSV export
 ├── admin_master.php           <- manage universities (global) + courses/seat caps (scoped)
 ├── course_fees.php            <- set semester-wise fee amounts for one course
 ├── admin_activity.php         <- full audit trail / activity log

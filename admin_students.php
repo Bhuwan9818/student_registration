@@ -44,11 +44,12 @@ if (!empty($_GET['q'])) {
 
 $whereSql = 'WHERE ' . implode(' AND ', $where);
 
-$sql = "SELECT s.*, u.full_name as staff_name, c.name as course_name, un.name as university_name,
+$sql = "SELECT s.*, u.full_name as staff_name, pu.full_name as center_name, c.name as course_name, un.name as university_name,
                sy.year_label,
                (SELECT status FROM fees f WHERE f.student_id = s.id ORDER BY f.id DESC LIMIT 1) as fee_status
         FROM students s
         LEFT JOIN users u ON u.id = s.created_by
+        LEFT JOIN users pu ON pu.id = u.parent_user_id
         LEFT JOIN courses c ON c.id = s.course_id
         LEFT JOIN universities un ON un.id = s.university_id
         LEFT JOIN sessions_years sy ON sy.id = s.session_id
@@ -80,7 +81,9 @@ $courses      = $pdo->prepare("SELECT * FROM courses WHERE status='active' AND u
 $courses->execute([$activeUni['id']]);
 $courses      = $courses->fetchAll();
 $sessionsYrs  = $pdo->query("SELECT * FROM sessions_years WHERE status='active' ORDER BY year_label DESC")->fetchAll();
-$staffList    = $pdo->query("SELECT id, full_name FROM users WHERE role='staff' ORDER BY full_name")->fetchAll();
+$staffList    = $pdo->query("SELECT u.id, u.full_name, pu.full_name as center_name
+                              FROM users u LEFT JOIN users pu ON pu.id = u.parent_user_id
+                              WHERE u.role='staff' ORDER BY pu.full_name IS NULL DESC, pu.full_name, u.full_name")->fetchAll();
 
 require_once __DIR__ . '/includes/header.php';
 
@@ -145,9 +148,11 @@ $exportQs['export'] = 'csv';
     </div>
     <div class="col-md-2">
       <select name="staff_id" class="form-select form-select-sm">
-        <option value="">All Staff</option>
+        <option value="">All Centers/Sub-Centers</option>
         <?php foreach ($staffList as $st): ?>
-          <option value="<?= $st['id'] ?>" <?= (($_GET['staff_id'] ?? '') == $st['id']) ? 'selected' : '' ?>><?= e($st['full_name']) ?></option>
+          <option value="<?= $st['id'] ?>" <?= (($_GET['staff_id'] ?? '') == $st['id']) ? 'selected' : '' ?>>
+            <?= $st['center_name'] ? '↳ ' . e($st['full_name']) . ' (' . e($st['center_name']) . ')' : e($st['full_name']) ?>
+          </option>
         <?php endforeach; ?>
       </select>
     </div>
@@ -201,7 +206,12 @@ $exportQs['export'] = 'csv';
             <td><?= e($s['mobile']) ?></td>
             <td><?= e($s['course_name'] ?? '-') ?></td>
             <td><?= e($s['year_label'] ?? '-') ?></td>
-            <td><?= e($s['staff_name'] ?? '-') ?></td>
+            <td>
+              <?= e($s['staff_name'] ?? '-') ?>
+              <?php if ($s['center_name']): ?>
+                <div class="text-muted" style="font-size:.7rem;">under <?= e($s['center_name']) ?></div>
+              <?php endif; ?>
+            </td>
             <td><?= statusBadge($s['status']) ?></td>
             <td><?= $s['fee_status'] ? statusBadge($s['fee_status']) : '<span class="badge bg-light text-dark border">Not Paid</span>' ?></td>
             <td>

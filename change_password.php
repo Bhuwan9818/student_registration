@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/config.php';
-requireLogin();
+requireAdmin();
 
 $pageTitle = 'Change Password';
 

@@ -16,8 +16,10 @@ CREATE TABLE users (
   phone VARCHAR(15) DEFAULT NULL,
   password VARCHAR(255) NOT NULL,
   role ENUM('admin','staff') NOT NULL DEFAULT 'staff',
+  parent_user_id INT DEFAULT NULL,   -- if set, this "staff" account is a Sub-Center under that Center
   status ENUM('active','inactive') NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (parent_user_id) REFERENCES users(id)
 ) ENGINE=InnoDB;
 
 -- Default admin login -> username: admin | password: Admin@123 (change after first login)

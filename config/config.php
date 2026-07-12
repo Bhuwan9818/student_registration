@@ -7,10 +7,10 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'admission_portal');
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', 'root');
 // -----------------------------------------------
 
-define('BASE_URL', '/admission-portal'); // e.g. '/admission-portal' if hosted in a subfolder
+define('BASE_URL', '/student_registration'); // e.g. '/admission-portal' if hosted in a subfolder
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -171,6 +171,22 @@ function courseSeatUsage($pdo, $courseId) {
     $filled = $stmt2->fetchColumn();
 
     return [$filled, $total !== false ? $total : null];
+}
+
+// Total verified fees collected by a given center/sub-center user, split online vs offline
+function getFeeTotals($pdo, $userId) {
+    $stmt = $pdo->prepare("SELECT
+        COALESCE(SUM(CASE WHEN f.mode IN ('Online','UPI','Card') THEN f.amount ELSE 0 END), 0) as online_total,
+        COALESCE(SUM(CASE WHEN f.mode IN ('Cash','Cheque') THEN f.amount ELSE 0 END), 0) as offline_total
+        FROM fees f
+        JOIN students s ON s.id = f.student_id
+        WHERE s.created_by = ? AND f.status = 'verified'");
+    $stmt->execute([$userId]);
+    return $stmt->fetch();
+}
+
+function isOnlineMode($mode) {
+    return in_array($mode, ['Online', 'UPI', 'Card']);
 }
 
 function statusBadge($status) {
