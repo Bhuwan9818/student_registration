@@ -6,6 +6,14 @@ foreach (explode(' ', trim($_SESSION['full_name'] ?? '')) as $part) {
 }
 $initials = substr($initials, 0, 2) ?: 'U';
 $activeUni = getActiveUniversity($pdo);
+
+$currentPage = basename($_SERVER['PHP_SELF']);
+$centersGroupPages    = ['admin_centers.php', 'center_detail.php', 'fee_report.php'];
+$subcentersGroupPages = ['admin_subcenters.php', 'subcenter_detail.php', 'fee_report.php', 'student_ledger.php'];
+$currentScope = $_GET['scope'] ?? '';
+
+$centersGroupOpen    = in_array($currentPage, $centersGroupPages) && $currentScope !== 'subcenter';
+$subcentersGroupOpen = in_array($currentPage, $subcentersGroupPages) && ($currentScope === 'subcenter' || $currentPage === 'admin_subcenters.php' || $currentPage === 'subcenter_detail.php' || $currentPage === 'student_ledger.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,8 +53,28 @@ $activeUni = getActiveUniversity($pdo);
         <a href="<?= BASE_URL ?>/admin_activity.php" class="<?= active('admin_activity.php') ?>"><i class="fa-solid fa-clock-rotate-left"></i> Activity Log</a>
 
         <span class="sidebar-section-label">Administration</span>
-        <a href="<?= BASE_URL ?>/admin_centers.php" class="<?= active('admin_centers.php') ?>"><i class="fa-solid fa-building-user"></i> Centers</a>
-        <a href="<?= BASE_URL ?>/admin_subcenters.php" class="<?= active('admin_subcenters.php') ?>"><i class="fa-solid fa-sitemap"></i> Sub-Centers</a>
+
+        <a href="#centersMenu" class="nav-group-toggle" data-bs-toggle="collapse" role="button" aria-expanded="<?= $centersGroupOpen ? 'true' : 'false' ?>">
+          <span><i class="fa-solid fa-building-user"></i> Centers</span>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </a>
+        <div class="collapse <?= $centersGroupOpen ? 'show' : '' ?>" id="centersMenu">
+          <a href="<?= BASE_URL ?>/admin_centers.php" class="nav-sub-link <?= active('admin_centers.php') ?>">Center Ledgers</a>
+          <a href="<?= BASE_URL ?>/fee_report.php?scope=center&channel=online" class="nav-sub-link <?= ($currentPage=='fee_report.php' && $currentScope=='center' && ($_GET['channel']??'')=='online') ? 'active' : '' ?>">Online Fee</a>
+          <a href="<?= BASE_URL ?>/fee_report.php?scope=center&channel=offline" class="nav-sub-link <?= ($currentPage=='fee_report.php' && $currentScope=='center' && ($_GET['channel']??'')=='offline') ? 'active' : '' ?>">Offline Fee</a>
+        </div>
+
+        <a href="#subcentersMenu" class="nav-group-toggle" data-bs-toggle="collapse" role="button" aria-expanded="<?= $subcentersGroupOpen ? 'true' : 'false' ?>">
+          <span><i class="fa-solid fa-sitemap"></i> Sub-Centers</span>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </a>
+        <div class="collapse <?= $subcentersGroupOpen ? 'show' : '' ?>" id="subcentersMenu">
+          <a href="<?= BASE_URL ?>/admin_subcenters.php" class="nav-sub-link <?= active('admin_subcenters.php') ?>">Sub-Center Ledgers</a>
+          <a href="<?= BASE_URL ?>/fee_report.php?scope=subcenter&channel=online" class="nav-sub-link <?= ($currentPage=='fee_report.php' && $currentScope=='subcenter' && ($_GET['channel']??'')=='online') ? 'active' : '' ?>">Online Fee</a>
+          <a href="<?= BASE_URL ?>/fee_report.php?scope=subcenter&channel=offline" class="nav-sub-link <?= ($currentPage=='fee_report.php' && $currentScope=='subcenter' && ($_GET['channel']??'')=='offline') ? 'active' : '' ?>">Offline Fee</a>
+          <a href="<?= BASE_URL ?>/student_ledger.php" class="nav-sub-link <?= active('student_ledger.php') ?>">Student Ledger</a>
+        </div>
+
         <a href="<?= BASE_URL ?>/admin_master.php" class="<?= active('admin_master.php') ?>"><i class="fa-solid fa-sliders"></i> Master Data</a>
       <?php else: ?>
         <span class="sidebar-section-label">Overview</span>

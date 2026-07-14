@@ -68,6 +68,14 @@ reflects that until they switch.
   same three figures as stat cards, the full list of that account's
   registrations with fee channel per student, and a **Download Report (CSV)**
   button for that specific Center or Sub-Center.
+- **Centers and Sub-Centers as expandable sidebar menus** — each opens into:
+  *Center/Sub-Center Ledgers* (the account list/creation page), *Online Fee*,
+  and *Offline Fee* (portal-wide filterable ledgers of every online/offline
+  payment across all Centers or all Sub-Centers, each with its own CSV
+  export). Sub-Centers also has **Student Ledger** — a one-page form for
+  admin to directly add a student's record (skipping the step-by-step
+  wizard) and attribute it to whichever Center, Sub-Center, or admin's own
+  account it should be tracked under.
 - **Multi-step registration wizard** (5 steps): Personal Details → Contact &
   Address → Guardian Details → Academic Background → Course Selection &
   Review. Course list is scoped to the active university, shows live
@@ -212,6 +220,8 @@ admission-portal/
 ├── center_detail.php          <- per-Center report: registrations, online/offline fees, CSV export
 ├── admin_subcenters.php       <- create/disable Sub-Center accounts (under a Center)
 ├── subcenter_detail.php       <- per-Sub-Center report: registrations, online/offline fees, CSV export
+├── fee_report.php             <- Online/Offline Fee ledgers (shared page, ?scope=center|subcenter&channel=online|offline)
+├── student_ledger.php         <- admin's one-page manual student entry + attribution
 ├── admin_master.php           <- manage universities (global) + courses/seat caps (scoped)
 ├── course_fees.php            <- set semester-wise fee amounts for one course
 ├── admin_activity.php         <- full audit trail / activity log

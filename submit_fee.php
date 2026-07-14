@@ -5,13 +5,18 @@ requireLogin();
 $pageTitle = 'Submit Fee';
 $studentId = (int)($_GET['student_id'] ?? 0);
 
-$stmt = $pdo->prepare("SELECT * FROM students WHERE id = ? AND created_by = ?");
-$stmt->execute([$studentId, $_SESSION['user_id']]);
+if (isAdmin()) {
+    $stmt = $pdo->prepare("SELECT * FROM students WHERE id = ?");
+    $stmt->execute([$studentId]);
+} else {
+    $stmt = $pdo->prepare("SELECT * FROM students WHERE id = ? AND created_by = ?");
+    $stmt->execute([$studentId, $_SESSION['user_id']]);
+}
 $student = $stmt->fetch();
 
 if (!$student) {
     flash('error', 'Student not found or you do not have access to this record.');
-    redirect('my_students.php');
+    redirect(isAdmin() ? 'admin_students.php' : 'my_students.php');
 }
 
 $expectedFee = $student['course_id'] ? getSemesterFee($pdo, $student['course_id'], $student['semester_no']) : null;
