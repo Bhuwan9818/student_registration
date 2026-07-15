@@ -10,7 +10,7 @@ define('DB_USER', 'u677586028_vsacademy');
 define('DB_PASS', 'Bhuwan.9818');
 // -----------------------------------------------
 
-define('BASE_URL', '/admission-portal'); // e.g. '/admission-portal' if hosted in a subfolder
+define('BASE_URL', ''); // e.g. '/admission-portal' if hosted in a subfolder
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
