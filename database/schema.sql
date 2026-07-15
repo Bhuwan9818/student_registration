@@ -32,6 +32,7 @@ INSERT INTO users (full_name, username, email, password, role, status) VALUES
 CREATE TABLE universities (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
+  logo_path VARCHAR(255) DEFAULT NULL,
   status ENUM('active','inactive') NOT NULL DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

@@ -64,9 +64,16 @@ require_once __DIR__ . '/includes/header.php';
       <input type="hidden" name="return" value="<?= e($return) ?>">
       <button type="submit" class="table-card p-3 w-100 text-start border-0" style="cursor:pointer;">
         <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <div class="section-title mb-1"><?= e($u['name']) ?></div>
-            <div class="text-muted small"><?= $u['course_count'] ?> active course(s)</div>
+          <div class="d-flex align-items-center gap-3">
+            <?php if ($u['logo_path']): ?>
+              <img src="<?= e($u['logo_path']) ?>" alt="" style="width:44px; height:44px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#fff; padding:4px;">
+            <?php else: ?>
+              <span style="width:44px; height:44px; border-radius:8px; background:var(--canvas); border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fa-solid fa-building-columns text-muted"></i></span>
+            <?php endif; ?>
+            <div>
+              <div class="section-title mb-1"><?= e($u['name']) ?></div>
+              <div class="text-muted small"><?= $u['course_count'] ?> active course(s)</div>
+            </div>
           </div>
           <?php if (($_SESSION['active_university_id'] ?? null) == $u['id']): ?>
             <span class="badge bg-success">Current</span>

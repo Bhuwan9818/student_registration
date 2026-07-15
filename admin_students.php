@@ -6,9 +6,38 @@ requireUniversity($pdo);
 $activeUni = getActiveUniversity($pdo);
 $pageTitle = 'All Registrations';
 
-// ---- Bulk approve / reject ----
+// ---- Delete a single registration ----
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    $delId = (int)$_POST['delete_id'];
+    $info = $pdo->prepare("SELECT registration_no, first_name, last_name FROM students WHERE id = ?");
+    $info->execute([$delId]);
+    $delStudent = $info->fetch();
+    if ($delStudent) {
+        deleteStudentRecord($pdo, $delId);
+        logActivity($pdo, $_SESSION['user_id'], 'delete', "Deleted registration " . $delStudent['registration_no'] . " for " . $delStudent['first_name'] . ' ' . $delStudent['last_name']);
+        flash('success', 'Registration ' . $delStudent['registration_no'] . ' deleted.');
+    }
+    redirect('admin_students.php');
+}
+
+// ---- Bulk approve / reject / delete ----
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_action']) && !empty($_POST['ids'])) {
     $ids = array_map('intval', $_POST['ids']);
+
+    if ($_POST['bulk_action'] === 'delete') {
+        foreach ($ids as $sid) {
+            $info = $pdo->prepare("SELECT registration_no FROM students WHERE id = ?");
+            $info->execute([$sid]);
+            $regNo = $info->fetchColumn();
+            if ($regNo) {
+                deleteStudentRecord($pdo, $sid);
+                logActivity($pdo, $_SESSION['user_id'], 'delete', "Deleted registration $regNo (bulk action)");
+            }
+        }
+        flash('success', count($ids) . ' registration(s) deleted.');
+        redirect('admin_students.php');
+    }
+
     $newStatus = $_POST['bulk_action'] === 'approve' ? 'approved' : 'rejected';
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
@@ -185,6 +214,7 @@ $exportQs['export'] = 'csv';
         <span class="small text-muted"><span id="bulkCount">0</span> selected</span>
         <button type="submit" name="bulk_action" value="approve" class="btn btn-sm btn-success">Approve Selected</button>
         <button type="submit" name="bulk_action" value="reject" class="btn btn-sm btn-danger">Reject Selected</button>
+        <button type="submit" name="bulk_action" value="delete" class="btn btn-sm btn-outline-danger" onclick="return confirm('Permanently delete the selected registration(s)? This cannot be undone.');">Delete Selected</button>
       </div>
     </div>
     <div class="table-responsive">
@@ -217,6 +247,7 @@ $exportQs['export'] = 'csv';
             <td>
               <a href="student_detail.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
               <a href="print_slip.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fa-solid fa-print"></i></a>
+              <button type="submit" name="delete_id" value="<?= $s['id'] ?>" formnovalidate class="btn btn-sm btn-outline-danger" onclick="return confirm('Permanently delete this registration? This cannot be undone.');"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
           <?php endforeach; ?>

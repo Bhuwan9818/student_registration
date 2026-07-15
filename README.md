@@ -115,9 +115,16 @@ reflects that until they switch.
   a portal-wide activity feed.
 - **Activity log** — a full audit trail of registrations, approvals,
   rejections, fee submissions/verifications, and staff account creation.
-- **Master data management** — admin adds/disables universities (global),
-  and per-university: courses, seat caps, and semester-wise fee structures.
-  Sessions/years are shared across all universities.
+- **Master data management** — admin adds/disables universities (global,
+  each with an optional logo shown in the sidebar university switcher, the
+  picker page, and Master Data), and per-university: courses, seat caps, and
+  semester-wise fee structures. Sessions/years are shared across all
+  universities.
+- **Delete a registration** — admin can permanently delete any registration,
+  from its detail page or directly from the All Registrations list
+  (individually or in bulk). Deleting cleans up its fee records and any
+  re-registration links automatically, and is confirmed before it happens
+  since it can't be undone.
 
 ## Setup (XAMPP / local)
 
@@ -158,6 +165,8 @@ whichever of these you haven't already, **in order**, against your existing
 4. `database/migration_v5.sql` — adds `parent_user_id` on `users` for the
    Centers/Sub-Centers hierarchy. Every existing staff account becomes a
    Center automatically (nothing to fix up here).
+5. `database/migration_v6.sql` — adds `logo_path` on `universities` for the
+   university logo upload feature.
 
 None of these delete existing data.
 
@@ -206,6 +215,7 @@ admission-portal/
 ├── database/migration_v3.sql  <- run to add Fresh vs Re-Registration support
 ├── database/migration_v4.sql  <- run to add multi-university courses + fee structure
 ├── database/migration_v5.sql  <- run to add Centers/Sub-Centers hierarchy
+├── database/migration_v6.sql  <- run to add university logo upload
 ├── includes/                  <- shared header/footer/sidebar (incl. university switcher)
 ├── assets/css/style.css       <- all styling (design tokens at the top)
 ├── assets/img/logo.png        <- VS Academy logo (swap this file to rebrand)

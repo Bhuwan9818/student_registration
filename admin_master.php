@@ -20,8 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_item'])) {
         $ins = $pdo->prepare("INSERT INTO courses (university_id, name, duration_years, total_seats) VALUES (?, ?, ?, ?)");
         $ins->execute([$activeUni['id'], $name, $duration, $seats]);
     } elseif ($type === 'university') {
-        $ins = $pdo->prepare("INSERT INTO universities (name) VALUES (?)");
-        $ins->execute([$name]);
+        $logoPath = handleUpload('logo', 'university_logos', ['jpg','jpeg','png','svg','webp']);
+        $ins = $pdo->prepare("INSERT INTO universities (name, logo_path) VALUES (?, ?)");
+        $ins->execute([$name, $logoPath]);
     } elseif ($type === 'session') {
         $ins = $pdo->prepare("INSERT INTO sessions_years (year_label) VALUES (?)");
         $ins->execute([$name]);
@@ -117,7 +118,14 @@ require_once __DIR__ . '/includes/header.php';
       <ul class="list-group list-group-flush">
         <?php foreach ($universities as $u): ?>
         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-          <span><?= e($u['name']) ?> <?php if ($activeUni && $activeUni['id'] == $u['id']): ?><span class="badge bg-primary">Active</span><?php endif; ?></span>
+          <span class="d-flex align-items-center gap-2">
+            <?php if ($u['logo_path']): ?>
+              <img src="<?= e($u['logo_path']) ?>" alt="" style="width:28px; height:28px; object-fit:contain; border-radius:4px; border:1px solid var(--border); background:#fff;">
+            <?php else: ?>
+              <span style="width:28px; height:28px; border-radius:4px; background:var(--canvas); border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center;"><i class="fa-solid fa-building-columns text-muted" style="font-size:.7rem;"></i></span>
+            <?php endif; ?>
+            <?= e($u['name']) ?> <?php if ($activeUni && $activeUni['id'] == $u['id']): ?><span class="badge bg-primary">Active</span><?php endif; ?>
+          </span>
           <form method="POST" class="d-inline">
             <input type="hidden" name="type" value="university">
             <input type="hidden" name="id" value="<?= $u['id'] ?>">
@@ -171,12 +179,14 @@ require_once __DIR__ . '/includes/header.php';
 
 <!-- Add University Modal -->
 <div class="modal fade" id="addUniversityModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
     <div class="modal-header"><h6 class="modal-title">Add University</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
       <input type="hidden" name="type" value="university">
       <label class="form-label">University Name</label>
-      <input type="text" name="name" class="form-control" required>
+      <input type="text" name="name" class="form-control mb-2" required>
+      <label class="form-label">University Logo <small class="text-muted">(optional)</small></label>
+      <input type="file" name="logo" class="form-control" accept=".jpg,.jpeg,.png,.svg,.webp">
     </div>
     <div class="modal-footer"><button type="submit" name="add_item" value="1" class="btn btn-primary btn-sm">Add</button></div>
   </form>

@@ -28,6 +28,7 @@ $iconMap = [
     'fee_verify'   => 'fa-check-double',
     'fee_reject'   => 'fa-ban',
     'staff_create' => 'fa-user-shield',
+    'delete'       => 'fa-trash',
 ];
 
 require_once __DIR__ . '/includes/header.php';

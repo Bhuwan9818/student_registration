@@ -65,7 +65,7 @@ $recentActivity = $pdo->query("SELECT a.*, u.full_name as user_name, s.registrat
 $iconMap = [
     'registration' => 'fa-user-plus', 'approve' => 'fa-circle-check', 'reject' => 'fa-circle-xmark',
     'fee_submit' => 'fa-money-bill-wave', 'fee_verify' => 'fa-check-double', 'fee_reject' => 'fa-ban',
-    'staff_create' => 'fa-user-shield',
+    'staff_create' => 'fa-user-shield', 'delete' => 'fa-trash',
 ];
 
 require_once __DIR__ . '/includes/header.php';

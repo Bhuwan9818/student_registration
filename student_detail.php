@@ -37,6 +37,16 @@ if (isAdmin() && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_a
     redirect('student_detail.php?id=' . $id);
 }
 
+// Admin: delete registration
+if (isAdmin() && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_registration'])) {
+    $name = $student['first_name'] . ' ' . $student['last_name'];
+    $regNo = $student['registration_no'];
+    deleteStudentRecord($pdo, $id);
+    logActivity($pdo, $_SESSION['user_id'], 'delete', "Deleted registration $regNo for $name");
+    flash('success', "Registration $regNo deleted.");
+    redirect('admin_students.php');
+}
+
 $feeStmt = $pdo->prepare("SELECT f.*, u.full_name as submitted_by_name
                            FROM fees f LEFT JOIN users u ON u.id = f.submitted_by
                            WHERE f.student_id = ? ORDER BY f.id DESC");
@@ -54,6 +64,9 @@ require_once __DIR__ . '/includes/header.php';
   </div>
   <div class="d-flex gap-2">
     <a href="print_slip.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Print Slip</a>
+    <?php if (isAdmin()): ?>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa-solid fa-trash"></i> Delete</button>
+    <?php endif; ?>
     <a href="<?= isAdmin() ? 'admin_students.php' : 'my_students.php' ?>" class="btn btn-sm btn-outline-secondary">
       <i class="fa-solid fa-arrow-left"></i> Back
     </a>
@@ -168,5 +181,30 @@ require_once __DIR__ . '/includes/header.php';
     </div>
   </div>
 </div>
+
+<?php if (isAdmin()): ?>
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST">
+        <div class="modal-header">
+          <h6 class="modal-title text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Delete Registration</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-1">Are you sure you want to permanently delete the registration for
+            <strong><?= e($student['first_name'] . ' ' . $student['last_name']) ?></strong>
+            (<span class="reg-no"><?= e($student['registration_no']) ?></span>)?</p>
+          <p class="text-muted small mb-0">This also removes any fee records tied to this registration. This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="delete_registration" value="1" class="btn btn-sm btn-danger">Yes, Delete It</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

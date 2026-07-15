@@ -10,7 +10,7 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 // -----------------------------------------------
 
-define('BASE_URL', '/admission-portal'); // e.g. '/admission-portal' if hosted in a subfolder
+define('BASE_URL', ''); // e.g. '/admission-portal' if hosted in a subfolder
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -132,22 +132,35 @@ function generateRegistrationNo($pdo) {
 
 // Handles a single file upload; returns relative path or null
 function handleUpload($fileKey, $destFolder, $allowedExt = ['jpg','jpeg','png','pdf']) {
-    if (!isset($_FILES[$fileKey]) || $_FILES[$fileKey]['error'] === UPLOAD_ERR_NO_FILE) {
-        return null;
+
+    if (!isset($_FILES[$fileKey])) {
+        die("File field not found");
     }
-    if ($_FILES[$fileKey]['error'] !== UPLOAD_ERR_OK) {
-        return null;
+
+    if ($_FILES[$fileKey]['error'] != UPLOAD_ERR_OK) {
+        die("Upload error code: " . $_FILES[$fileKey]['error']);
     }
+
     $ext = strtolower(pathinfo($_FILES[$fileKey]['name'], PATHINFO_EXTENSION));
+
     if (!in_array($ext, $allowedExt)) {
-        return null;
+        die("Extension not allowed: " . $ext);
     }
-    $newName = uniqid('doc_', true) . '.' . $ext;
-    $destPath = __DIR__ . '/../uploads/' . $destFolder . '/' . $newName;
-    if (move_uploaded_file($_FILES[$fileKey]['tmp_name'], $destPath)) {
-        return 'uploads/' . $destFolder . '/' . $newName;
+
+    $uploadDir = __DIR__ . '/../uploads/' . $destFolder . '/';
+
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
     }
-    return null;
+
+    $newName = uniqid() . '.' . $ext;
+    $destPath = $uploadDir . $newName;
+
+    if (!move_uploaded_file($_FILES[$fileKey]['tmp_name'], $destPath)) {
+        die("move_uploaded_file failed");
+    }
+
+    return 'uploads/' . $destFolder . '/' . $newName;
 }
 
 function active($page) {
@@ -187,6 +200,15 @@ function getFeeTotals($pdo, $userId) {
 
 function isOnlineMode($mode) {
     return in_array($mode, ['Online', 'UPI', 'Card']);
+}
+
+// Deletes a student registration along with its dependent records
+// (fees, activity log references, and any re-registration links back to it).
+function deleteStudentRecord($pdo, $studentId) {
+    $pdo->prepare("DELETE FROM fees WHERE student_id = ?")->execute([$studentId]);
+    $pdo->prepare("UPDATE activity_log SET student_id = NULL WHERE student_id = ?")->execute([$studentId]);
+    $pdo->prepare("UPDATE students SET parent_student_id = NULL WHERE parent_student_id = ?")->execute([$studentId]);
+    $pdo->prepare("DELETE FROM students WHERE id = ?")->execute([$studentId]);
 }
 
 function statusBadge($status) {

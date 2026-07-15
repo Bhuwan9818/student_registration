@@ -101,7 +101,11 @@ $subcentersGroupOpen = in_array($currentPage, $subcentersGroupPages) && ($curren
 
       <div class="ms-auto d-flex align-items-center gap-3">
         <a href="<?= BASE_URL ?>/choose_university.php?return=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
-          <i class="fa-solid fa-building-columns"></i>
+          <?php if ($activeUni && $activeUni['logo_path']): ?>
+            <img src="<?= e($activeUni['logo_path']) ?>" alt="" style="width:18px; height:18px; object-fit:contain;">
+          <?php else: ?>
+            <i class="fa-solid fa-building-columns"></i>
+          <?php endif; ?>
           <span class="d-none d-md-inline"><?= $activeUni ? e($activeUni['name']) : 'Select University' ?></span>
           <span class="d-inline d-md-none">University</span>
         </a>
