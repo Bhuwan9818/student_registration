@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
       <button type="submit" class="btn btn-primary w-100 py-2">Sign In</button>
     </form>
-    <p class="text-center text-muted mt-3 small mb-0">Default admin: admin / Admin@123</p>
+    
   </div>
 </div>
 </body>
