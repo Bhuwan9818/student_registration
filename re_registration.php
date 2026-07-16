@@ -31,24 +31,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_reregister'])
 
     $sql = "INSERT INTO students (
                 registration_no, registration_type, parent_student_id, created_by,
-                first_name, last_name, dob, gender, category, aadhar_no, photo_path,
-                mobile, alt_mobile, email, address, city, state, pincode,
-                father_name, mother_name, guardian_mobile,
+                first_name, last_name, father_name, mother_name, dob, gender, category,
+                employment_status, marital_status, religion, nationality, aadhar_no, abc_id, deb_id, photo_path,
+                mobile, alt_mobile, email, alt_email, address, city, district, state, pincode, guardian_mobile,
                 last_qualification, board_university, passing_year, percentage, marksheet_path,
-                university_id, course_id, session_id, semester_no
-            ) VALUES (?,'re-registration',?,?, ?,?,?,?,?,?,?, ?,?,?,?,?,?,?, ?,?,?, ?,?,?,?,?, ?,?,?,?)";
+                university_id, course_id, specialization, session_id, semester_no
+            ) VALUES (?,'re-registration',?,?, ?,?,?,?,?,?,?, ?,?,?,?,?,?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?)";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $regNo, $oldId, $_SESSION['user_id'],
-        $old['first_name'], $old['last_name'], $old['dob'], $old['gender'], $old['category'], $old['aadhar_no'], $old['photo_path'],
-        $old['mobile'], $old['alt_mobile'], $old['email'], $old['address'], $old['city'], $old['state'], $old['pincode'],
-        $old['father_name'], $old['mother_name'], $old['guardian_mobile'],
+        $old['first_name'], $old['last_name'], $old['father_name'], $old['mother_name'], $old['dob'], $old['gender'], $old['category'],
+        $old['employment_status'], $old['marital_status'], $old['religion'], $old['nationality'], $old['aadhar_no'], $old['abc_id'], $old['deb_id'], $old['photo_path'],
+        $old['mobile'], $old['alt_mobile'], $old['email'], $old['alt_email'], $old['address'], $old['city'], $old['district'], $old['state'], $old['pincode'], $old['guardian_mobile'],
         $old['last_qualification'], $old['board_university'], $old['passing_year'], $old['percentage'], $old['marksheet_path'],
-        $activeUni['id'], $newCourseId, $newSessionId, $newSemesterNo
+        $activeUni['id'], $newCourseId, $old['specialization'], $newSessionId, $newSemesterNo
     ]);
 
     $newId = $pdo->lastInsertId();
+
+    // Carry forward academic history so the new record has a complete picture
+    $oldAcademics = $pdo->prepare("SELECT * FROM student_academics WHERE student_id = ?");
+    $oldAcademics->execute([$oldId]);
+    foreach ($oldAcademics->fetchAll() as $a) {
+        $ins = $pdo->prepare("INSERT INTO student_academics (student_id, level, institution_board, year_of_passing, percentage, marksheet_path) VALUES (?,?,?,?,?,?)");
+        $ins->execute([$newId, $a['level'], $a['institution_board'], $a['year_of_passing'], $a['percentage'], $a['marksheet_path']]);
+    }
+
     logActivity($pdo, $_SESSION['user_id'], 'registration',
         'Re-registration for ' . $old['first_name'] . ' ' . $old['last_name'], $newId);
 

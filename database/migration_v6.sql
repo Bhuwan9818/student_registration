@@ -8,6 +8,6 @@
 -- it already includes this.)
 -- ============================================================
 
-USE u677586028_admission_db;
+USE admission_portal;
 
 ALTER TABLE universities ADD COLUMN logo_path VARCHAR(255) DEFAULT NULL AFTER name;

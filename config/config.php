@@ -5,12 +5,12 @@
 
 // ---- Edit these to match your MySQL setup ----
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'u677586028_admission_db');
-define('DB_USER', 'u677586028_vsacademy');
-define('DB_PASS', 'Bhuwan.9818');
+define('DB_NAME', 'admission_portal');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 // -----------------------------------------------
 
-define('BASE_URL', ''); // e.g. '/admission-portal' if hosted in a subfolder
+define('BASE_URL', '/admission-portal'); // e.g. '/admission-portal' if hosted in a subfolder
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -191,8 +191,35 @@ function isOnlineMode($mode) {
 
 // Deletes a student registration along with its dependent records
 // (fees, activity log references, and any re-registration links back to it).
+// Document type keys used in student_documents.doc_type, with display labels
+function documentTypeLabels() {
+    return [
+        'photo'                 => 'Photo',
+        'aadhaar'                => 'Aadhaar Card',
+        'student_signature'     => "Student's Signature",
+        'parent_signature'      => "Parent's Signature",
+        'migration_certificate' => 'Migration Certificate',
+        'affidavit'             => 'Affidavit',
+        'other_certificate'     => 'Other Certificates',
+        'abc_document'          => 'ABC ID Proof',
+        'deb_document'          => 'DEB ID Proof',
+    ];
+}
+
+// Academic level keys used in student_academics.level, with display labels
+function academicLevelLabels() {
+    return [
+        '10th' => 'High School (10th)',
+        '12th' => 'Intermediate (12th)',
+        'UG'   => 'Undergraduate (UG)',
+        'PG'   => 'Postgraduate (PG)',
+    ];
+}
+
 function deleteStudentRecord($pdo, $studentId) {
     $pdo->prepare("DELETE FROM fees WHERE student_id = ?")->execute([$studentId]);
+    $pdo->prepare("DELETE FROM student_academics WHERE student_id = ?")->execute([$studentId]);
+    $pdo->prepare("DELETE FROM student_documents WHERE student_id = ?")->execute([$studentId]);
     $pdo->prepare("UPDATE activity_log SET student_id = NULL WHERE student_id = ?")->execute([$studentId]);
     $pdo->prepare("UPDATE students SET parent_student_id = NULL WHERE parent_student_id = ?")->execute([$studentId]);
     $pdo->prepare("DELETE FROM students WHERE id = ?")->execute([$studentId]);

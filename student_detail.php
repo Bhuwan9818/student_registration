@@ -53,6 +53,29 @@ $feeStmt = $pdo->prepare("SELECT f.*, u.full_name as submitted_by_name
 $feeStmt->execute([$id]);
 $fees = $feeStmt->fetchAll();
 
+$academicLevels = academicLevelLabels();
+$documentTypes  = documentTypeLabels();
+
+$academicsStmt = $pdo->prepare("SELECT * FROM student_academics WHERE student_id = ?");
+$academicsStmt->execute([$id]);
+$academics = $academicsStmt->fetchAll();
+
+$documentsStmt = $pdo->prepare("SELECT * FROM student_documents WHERE student_id = ?");
+$documentsStmt->execute([$id]);
+$documents = $documentsStmt->fetchAll();
+
+// Re-registrations often don't re-collect academics/documents — fall back to the original record's
+$sourceId = $id;
+if (!$academics && !$documents && $student['parent_student_id']) {
+    $sourceId = $student['parent_student_id'];
+    $academicsStmt->execute([$sourceId]);
+    $academics = $academicsStmt->fetchAll();
+    $documentsStmt->execute([$sourceId]);
+    $documents = $documentsStmt->fetchAll();
+}
+$academicsByLevel = [];
+foreach ($academics as $a) { $academicsByLevel[$a['level']] = $a; }
+
 $pageTitle = 'Registration - ' . $student['registration_no'];
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -94,38 +117,73 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-md-4"><strong>Gender:</strong> <?= e($student['gender']) ?></div>
         <div class="col-md-4"><strong>Category:</strong> <?= e($student['category']) ?></div>
         <div class="col-md-4"><strong>Aadhar:</strong> <?= e($student['aadhar_no']) ?></div>
+        <div class="col-md-4"><strong>ABC ID:</strong> <?= e($student['abc_id'] ?: '-') ?></div>
+        <div class="col-md-4"><strong>DEB ID:</strong> <?= e($student['deb_id'] ?: '-') ?></div>
+        <div class="col-md-4"><strong>Employment Status:</strong> <?= e($student['employment_status'] ?: '-') ?></div>
+        <div class="col-md-4"><strong>Marital Status:</strong> <?= e($student['marital_status'] ?: '-') ?></div>
+        <div class="col-md-4"><strong>Religion:</strong> <?= e($student['religion'] ?: '-') ?></div>
+        <div class="col-md-4"><strong>Nationality:</strong> <?= e($student['nationality'] ?: '-') ?></div>
       </div>
 
       <h6 class="text-primary mt-3">Contact & Address</h6>
       <div class="row small mb-2">
         <div class="col-md-4"><strong>Mobile:</strong> <?= e($student['mobile']) ?></div>
-        <div class="col-md-4"><strong>Alt Mobile:</strong> <?= e($student['alt_mobile']) ?></div>
-        <div class="col-md-4"><strong>Email:</strong> <?= e($student['email']) ?></div>
-        <div class="col-md-12"><strong>Address:</strong> <?= e($student['address']) ?>, <?= e($student['city']) ?>, <?= e($student['state']) ?> - <?= e($student['pincode']) ?></div>
+        <div class="col-md-4"><strong>Alt Mobile:</strong> <?= e($student['alt_mobile'] ?: '-') ?></div>
+        <div class="col-md-4"><strong>Email:</strong> <?= e($student['email'] ?: '-') ?></div>
+        <div class="col-md-4"><strong>Alt Email:</strong> <?= e($student['alt_email'] ?: '-') ?></div>
+        <div class="col-md-8"><strong>Address:</strong> <?= e($student['address']) ?>, <?= e($student['city']) ?><?= $student['district'] ? ', ' . e($student['district']) : '' ?>, <?= e($student['state']) ?> - <?= e($student['pincode']) ?></div>
       </div>
 
       <h6 class="text-primary mt-3">Guardian Details</h6>
       <div class="row small mb-2">
         <div class="col-md-4"><strong>Father:</strong> <?= e($student['father_name']) ?></div>
         <div class="col-md-4"><strong>Mother:</strong> <?= e($student['mother_name']) ?></div>
-        <div class="col-md-4"><strong>Guardian Mobile:</strong> <?= e($student['guardian_mobile']) ?></div>
+        <div class="col-md-4"><strong>Guardian Mobile:</strong> <?= e($student['guardian_mobile'] ?: '-') ?></div>
       </div>
 
       <h6 class="text-primary mt-3">Academic Background</h6>
-      <div class="row small mb-2">
-        <div class="col-md-4"><strong>Last Qualification:</strong> <?= e($student['last_qualification']) ?></div>
-        <div class="col-md-4"><strong>Board/University:</strong> <?= e($student['board_university']) ?></div>
-        <div class="col-md-4"><strong>Passing Year:</strong> <?= e($student['passing_year']) ?></div>
-        <div class="col-md-4"><strong>Percentage:</strong> <?= e($student['percentage']) ?>%</div>
-        <?php if ($student['marksheet_path']): ?>
-        <div class="col-md-4"><a href="<?= e($student['marksheet_path']) ?>" target="_blank">View Marksheet</a></div>
-        <?php endif; ?>
-      </div>
+      <?php if ($academicsByLevel): ?>
+        <div class="row small mb-2">
+          <?php foreach ($academicLevels as $levelKey => $levelLabel): ?>
+            <?php if (empty($academicsByLevel[$levelKey])) continue; ?>
+            <?php $a = $academicsByLevel[$levelKey]; ?>
+            <div class="col-md-6 mb-1">
+              <strong><?= e($levelLabel) ?>:</strong> <?= e($a['institution_board']) ?>
+              (<?= e($a['year_of_passing'] ?: '-') ?>, <?= e($a['percentage'] ?: '-') ?>%)
+              <?php if ($a['marksheet_path']): ?> — <a href="<?= e($a['marksheet_path']) ?>" target="_blank">Marksheet</a><?php endif; ?>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      <?php elseif ($student['last_qualification']): ?>
+        <div class="row small mb-2">
+          <div class="col-md-4"><strong>Last Qualification:</strong> <?= e($student['last_qualification']) ?></div>
+          <div class="col-md-4"><strong>Board/University:</strong> <?= e($student['board_university']) ?></div>
+          <div class="col-md-4"><strong>Passing Year:</strong> <?= e($student['passing_year']) ?></div>
+          <div class="col-md-4"><strong>Percentage:</strong> <?= e($student['percentage']) ?>%</div>
+          <?php if ($student['marksheet_path']): ?>
+          <div class="col-md-4"><a href="<?= e($student['marksheet_path']) ?>" target="_blank">View Marksheet</a></div>
+          <?php endif; ?>
+        </div>
+      <?php else: ?>
+        <p class="text-muted small mb-2">No academic history on record.</p>
+      <?php endif; ?>
+
+      <h6 class="text-primary mt-3">Documents</h6>
+      <?php if ($documents): ?>
+        <div class="row small mb-2">
+          <?php foreach ($documents as $d): ?>
+            <div class="col-md-4 mb-1"><i class="fa-solid fa-file text-muted"></i> <a href="<?= e($d['file_path']) ?>" target="_blank"><?= e($documentTypes[$d['doc_type']] ?? $d['doc_type']) ?></a></div>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="text-muted small mb-2">No documents uploaded.</p>
+      <?php endif; ?>
 
       <h6 class="text-primary mt-3">Course Applied For</h6>
       <div class="row small mb-2">
         <div class="col-md-4"><strong>University:</strong> <?= e($student['university_name']) ?></div>
         <div class="col-md-4"><strong>Course:</strong> <?= e($student['course_name']) ?></div>
+        <div class="col-md-4"><strong>Specialization:</strong> <?= e($student['specialization'] ?: '-') ?></div>
         <div class="col-md-4"><strong>Session:</strong> <?= e($student['year_label']) ?></div>
         <div class="col-md-4"><strong>Semester:</strong> <?= e($student['semester_no']) ?></div>
       </div>

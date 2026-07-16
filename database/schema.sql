@@ -106,39 +106,47 @@ CREATE TABLE students (
   parent_student_id INT DEFAULT NULL,          -- for re-registration: points to the earlier record
   created_by INT NOT NULL,               -- staff/admin user who filled the form
 
-  -- Step 1: Personal details
+  -- Step 1: Basic details (identity + admission info)
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) DEFAULT NULL,
+  father_name VARCHAR(100) DEFAULT NULL,
+  mother_name VARCHAR(100) DEFAULT NULL,
   dob DATE DEFAULT NULL,
   gender ENUM('Male','Female','Other') DEFAULT NULL,
   category ENUM('General','OBC','SC','ST','EWS','Other') DEFAULT NULL,
+  employment_status VARCHAR(30) DEFAULT NULL,
+  marital_status VARCHAR(20) DEFAULT NULL,
+  religion VARCHAR(30) DEFAULT NULL,
+  nationality VARCHAR(50) DEFAULT 'Indian',
   aadhar_no VARCHAR(20) DEFAULT NULL,
+  abc_id VARCHAR(20) DEFAULT NULL,
+  deb_id VARCHAR(20) DEFAULT NULL,
   photo_path VARCHAR(255) DEFAULT NULL,
 
-  -- Step 2: Contact & address
+  -- Step 2: Personal / contact details
   mobile VARCHAR(15) NOT NULL,
   alt_mobile VARCHAR(15) DEFAULT NULL,
   email VARCHAR(100) DEFAULT NULL,
+  alt_email VARCHAR(100) DEFAULT NULL,
   address TEXT,
   city VARCHAR(50) DEFAULT NULL,
+  district VARCHAR(50) DEFAULT NULL,
   state VARCHAR(50) DEFAULT NULL,
   pincode VARCHAR(10) DEFAULT NULL,
-
-  -- Step 3: Guardian details
-  father_name VARCHAR(100) DEFAULT NULL,
-  mother_name VARCHAR(100) DEFAULT NULL,
   guardian_mobile VARCHAR(15) DEFAULT NULL,
 
-  -- Step 4: Academic background
+  -- Legacy single-qualification fields, kept for old records (new registrations
+  -- use the student_academics table below instead)
   last_qualification VARCHAR(100) DEFAULT NULL,
   board_university VARCHAR(150) DEFAULT NULL,
   passing_year VARCHAR(10) DEFAULT NULL,
   percentage VARCHAR(10) DEFAULT NULL,
   marksheet_path VARCHAR(255) DEFAULT NULL,
 
-  -- Step 5: Course applying for
+  -- Course applying for
   university_id INT DEFAULT NULL,
   course_id INT DEFAULT NULL,
+  specialization VARCHAR(100) DEFAULT NULL,
   session_id INT DEFAULT NULL,
   semester_no INT NOT NULL DEFAULT 1,     -- which semester this registration covers
 
@@ -151,6 +159,32 @@ CREATE TABLE students (
   FOREIGN KEY (course_id) REFERENCES courses(id),
   FOREIGN KEY (session_id) REFERENCES sessions_years(id),
   FOREIGN KEY (parent_student_id) REFERENCES students(id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- Academic history — one row per qualification level (10th/12th/UG/PG)
+-- ------------------------------------------------------------
+CREATE TABLE student_academics (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  level ENUM('10th','12th','UG','PG') NOT NULL,
+  institution_board VARCHAR(150) DEFAULT NULL,
+  year_of_passing VARCHAR(10) DEFAULT NULL,
+  percentage VARCHAR(10) DEFAULT NULL,
+  marksheet_path VARCHAR(255) DEFAULT NULL,
+  FOREIGN KEY (student_id) REFERENCES students(id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- Documents — one row per uploaded file (photo, signature, certificates...)
+-- ------------------------------------------------------------
+CREATE TABLE student_documents (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  doc_type VARCHAR(50) NOT NULL,
+  file_path VARCHAR(255) NOT NULL,
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES students(id)
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
