@@ -76,7 +76,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('error', 'High School (10th) details are required.');
             redirect('register_student.php?step=3');
         }
-        $_SESSION['wizard']['academics'] = $_POST['academics'] ?? [];
+
+        $academicsData = $_POST['academics'] ?? [];
+        $existingAcademics = $_SESSION['wizard']['academics'] ?? [];
+
+        foreach ($academicLevels as $levelKey => $levelLabel) {
+            $row = $academicsData[$levelKey] ?? [];
+            $hasData = !empty($row['institution_board']) || !empty($row['year_of_passing']) || !empty($row['percentage']);
+            $priorMarksheet = $existingAcademics[$levelKey]['marksheet_path'] ?? null;
+
+            $uploadedPath = handleUpload("marksheet_$levelKey", 'marksheets', ['jpg','jpeg','png','pdf']);
+            $finalPath = $uploadedPath ?: $priorMarksheet;
+
+            if ($hasData) {
+                if (!$finalPath) {
+                    flash('error', $levelLabel . ' marksheet is required since you entered ' . $levelLabel . ' details.');
+                    redirect('register_student.php?step=3');
+                }
+                $row['marksheet_path'] = $finalPath;
+            }
+            $academicsData[$levelKey] = $row;
+        }
+
+        $_SESSION['wizard']['academics'] = $academicsData;
         redirect('register_student.php?step=4');
     }
 
@@ -126,8 +148,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($academicLevels as $levelKey => $levelLabel) {
             $row = $w['academics'][$levelKey] ?? [];
             if (!empty($row['institution_board']) || !empty($row['year_of_passing']) || !empty($row['percentage'])) {
-                $ins = $pdo->prepare("INSERT INTO student_academics (student_id, level, institution_board, year_of_passing, percentage) VALUES (?,?,?,?,?)");
-                $ins->execute([$newStudentId, $levelKey, $row['institution_board'] ?? '', $row['year_of_passing'] ?? '', $row['percentage'] ?? '']);
+                $ins = $pdo->prepare("INSERT INTO student_academics (student_id, level, institution_board, year_of_passing, percentage, marksheet_path) VALUES (?,?,?,?,?,?)");
+                $ins->execute([$newStudentId, $levelKey, $row['institution_board'] ?? '', $row['year_of_passing'] ?? '', $row['percentage'] ?? '', $row['marksheet_path'] ?? null]);
             }
         }
 
@@ -158,6 +180,18 @@ $courseNameMap = [];
 foreach ($courses as $c) { $courseNameMap[$c['id']] = $c['name']; }
 $sessionLabelMap = [];
 foreach ($sessionsYrs as $sy) { $sessionLabelMap[$sy['id']] = $sy['year_label']; }
+
+// Sub-courses grouped by course, for the dependent dropdown in Step 1
+$subCoursesByCourse = [];
+if ($courses) {
+    $courseIds = array_column($courses, 'id');
+    $placeholders = implode(',', array_fill(0, count($courseIds), '?'));
+    $scStmt = $pdo->prepare("SELECT * FROM sub_courses WHERE status='active' AND course_id IN ($placeholders) ORDER BY name");
+    $scStmt->execute($courseIds);
+    foreach ($scStmt->fetchAll() as $sc) {
+        $subCoursesByCourse[$sc['course_id']][] = $sc['name'];
+    }
+}
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -211,7 +245,9 @@ require_once __DIR__ . '/includes/header.php';
       </div>
       <div class="col-md-4">
         <label class="form-label">Specialization / Sub Course</label>
-        <input type="text" name="specialization" class="form-control" value="<?= e($w['specialization'] ?? '') ?>" placeholder="e.g. English, Computer Science">
+        <select name="specialization_select" id="subCourseSelect" class="form-select mb-2" style="display:none;"></select>
+        <input type="text" name="specialization" id="subCourseText" class="form-control" value="<?= e($w['specialization'] ?? '') ?>" placeholder="e.g. English, Computer Science">
+        <div id="subCourseHint" class="small text-muted mt-1"></div>
       </div>
       <div class="col-md-4">
         <label class="form-label">Semester</label>
@@ -366,25 +402,30 @@ require_once __DIR__ . '/includes/header.php';
   </form>
 
   <?php elseif ($step === 3): ?>
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
     <h5 class="mb-3">Academic Background</h5>
-    <p class="text-muted small">High School (10th) is required. Add whichever other levels apply.</p>
+    <p class="text-muted small">High School (10th) is required. Add whichever other levels apply — if you fill in a level's details, its marksheet upload becomes required too.</p>
 
     <?php foreach ($academicLevels as $levelKey => $levelLabel): ?>
-      <?php $row = $w['academics'][$levelKey] ?? []; $required = $levelKey === '10th'; ?>
+      <?php $row = $w['academics'][$levelKey] ?? []; $required = $levelKey === '10th'; $hasMarksheet = !empty($row['marksheet_path']); ?>
       <h6 class="mt-4 mb-2"><?= e($levelLabel) ?><?= $required ? ' *' : '' ?></h6>
       <div class="row g-3">
-        <div class="col-md-5">
+        <div class="col-md-4">
           <label class="form-label">Board / University / Institution<?= $required ? ' *' : '' ?></label>
           <input type="text" name="academics[<?= $levelKey ?>][institution_board]" class="form-control" value="<?= e($row['institution_board'] ?? '') ?>" <?= $required ? 'required' : '' ?>>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label class="form-label">Year of Passing<?= $required ? ' *' : '' ?></label>
           <input type="text" name="academics[<?= $levelKey ?>][year_of_passing]" class="form-control" value="<?= e($row['year_of_passing'] ?? '') ?>" <?= $required ? 'required' : '' ?>>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label class="form-label">Percentage / CGPA</label>
           <input type="text" name="academics[<?= $levelKey ?>][percentage]" class="form-control" value="<?= e($row['percentage'] ?? '') ?>">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label"><?= e($levelLabel) ?> Marksheet<?= $required ? ' *' : '' ?></label>
+          <input type="file" name="marksheet_<?= $levelKey ?>" class="form-control" accept=".jpg,.jpeg,.png,.pdf" <?= ($required && !$hasMarksheet) ? 'required' : '' ?>>
+          <?php if ($hasMarksheet): ?><div class="small text-success mt-1"><i class="fa-solid fa-check"></i> Uploaded</div><?php endif; ?>
         </div>
       </div>
     <?php endforeach; ?>
@@ -456,7 +497,7 @@ require_once __DIR__ . '/includes/header.php';
       <div class="row small mb-3">
         <?php foreach ($academicLevels as $levelKey => $levelLabel): ?>
           <?php $row = $w['academics'][$levelKey] ?? []; if (empty($row['institution_board'])) continue; ?>
-          <div class="col-md-6"><strong><?= e($levelLabel) ?>:</strong> <?= e($row['institution_board']) ?> (<?= e($row['year_of_passing'] ?? '-') ?>, <?= e($row['percentage'] ?? '-') ?>%)</div>
+          <div class="col-md-6"><strong><?= e($levelLabel) ?>:</strong> <?= e($row['institution_board']) ?> (<?= e($row['year_of_passing'] ?? '-') ?>, <?= e($row['percentage'] ?? '-') ?>%) <?= !empty($row['marksheet_path']) ? '<span class="text-success">— Marksheet uploaded</span>' : '' ?></div>
         <?php endforeach; ?>
       </div>
 
@@ -476,5 +517,43 @@ require_once __DIR__ . '/includes/header.php';
   <?php endif; ?>
 
 </div>
+
+<?php if ($step === 1): ?>
+<script>
+const subCoursesByCourse = <?= json_encode($subCoursesByCourse) ?>;
+const currentSpecialization = <?= json_encode($w['specialization'] ?? '') ?>;
+
+document.addEventListener('DOMContentLoaded', function () {
+  const courseSelect = document.getElementById('courseSelect');
+  const subSelect = document.getElementById('subCourseSelect');
+  const subText = document.getElementById('subCourseText');
+  const hint = document.getElementById('subCourseHint');
+
+  function refreshSubCourses() {
+    const options = subCoursesByCourse[courseSelect.value] || [];
+    if (options.length > 0) {
+      subSelect.innerHTML = '<option value="">Select Sub Course</option>' +
+        options.map(name => `<option value="${name}"${name === currentSpecialization ? ' selected' : ''}>${name}</option>`).join('');
+      subSelect.style.display = '';
+      subText.style.display = 'none';
+      subText.removeAttribute('name');
+      subSelect.setAttribute('name', 'specialization');
+      hint.textContent = '';
+    } else {
+      subSelect.style.display = 'none';
+      subSelect.removeAttribute('name');
+      subText.style.display = '';
+      subText.setAttribute('name', 'specialization');
+      hint.textContent = courseSelect.value ? 'No sub-courses set up for this course — type one in if needed.' : '';
+    }
+  }
+
+  if (courseSelect) {
+    courseSelect.addEventListener('change', refreshSubCourses);
+    refreshSubCourses();
+  }
+});
+</script>
+<?php endif; ?>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

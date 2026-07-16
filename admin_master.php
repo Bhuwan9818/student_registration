@@ -174,6 +174,8 @@ require_once __DIR__ . '/includes/header.php';
             <div class="small text-muted mt-1">No seat limit set</div>
           <?php endif; ?>
           <a href="course_fees.php?course_id=<?= $c['id'] ?>" class="small"><i class="fa-solid fa-sack-dollar"></i> Manage semester fees</a>
+          <span class="text-muted mx-1">·</span>
+          <a href="sub_courses.php?course_id=<?= $c['id'] ?>" class="small"><i class="fa-solid fa-diagram-project"></i> Manage sub-courses</a>
         </li>
 
         <!-- Edit Course Modal -->

@@ -52,6 +52,19 @@ CREATE TABLE courses (
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
+-- Sub-Courses — each sub-course belongs to exactly one course
+-- (e.g. "Master of Arts" -> "English", "History")
+-- ------------------------------------------------------------
+CREATE TABLE sub_courses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_id INT NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  status ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (course_id) REFERENCES courses(id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
 -- Semester-wise fee structure — one row per course per semester
 -- (number of semesters = duration_years * 2, standard convention)
 -- ------------------------------------------------------------
