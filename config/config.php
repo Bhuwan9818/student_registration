@@ -5,12 +5,12 @@
 
 // ---- Edit these to match your MySQL setup ----
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'u677586028_admission_db');
-define('DB_USER', 'u677586028_vsacademy');
-define('DB_PASS', 'Bhuwan.9818');
+define('DB_NAME', 'admission_portal');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 // -----------------------------------------------
 
-define('BASE_URL', ''); // e.g. '/admission-portal' if hosted in a subfolder
+define('BASE_URL', '/admission-portal'); // e.g. '/admission-portal' if hosted in a subfolder
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

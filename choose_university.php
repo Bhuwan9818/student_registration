@@ -58,27 +58,21 @@ require_once __DIR__ . '/includes/header.php';
 
 <div class="row g-3">
   <?php foreach ($universities as $u): ?>
-  <div class="col-md-6 col-lg-4">
-    <form method="POST">
+  <div class="col-6 col-md-4 col-lg-3">
+    <form method="POST" class="h-100">
       <input type="hidden" name="university_id" value="<?= $u['id'] ?>">
       <input type="hidden" name="return" value="<?= e($return) ?>">
-      <button type="submit" class="table-card p-3 w-100 text-start border-0" style="cursor:pointer;">
-        <div class="d-flex justify-content-between align-items-start">
-          <div class="d-flex align-items-center gap-3">
-            <?php if ($u['logo_path']): ?>
-              <img src="<?= e($u['logo_path']) ?>" alt="" style="width:44px; height:44px; object-fit:contain; border-radius:8px; border:1px solid var(--border); background:#fff; padding:4px;">
-            <?php else: ?>
-              <span style="width:44px; height:44px; border-radius:8px; background:var(--canvas); border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fa-solid fa-building-columns text-muted"></i></span>
-            <?php endif; ?>
-            <div>
-              <div class="section-title mb-1"><?= e($u['name']) ?></div>
-              <div class="text-muted small"><?= $u['course_count'] ?> active course(s)</div>
-            </div>
-          </div>
-          <?php if (($_SESSION['active_university_id'] ?? null) == $u['id']): ?>
-            <span class="badge bg-success">Current</span>
-          <?php endif; ?>
-        </div>
+      <button type="submit" class="uni-pick-card">
+        <?php if (($_SESSION['active_university_id'] ?? null) == $u['id']): ?>
+          <span class="badge bg-success uni-pick-current">Current</span>
+        <?php endif; ?>
+        <?php if ($u['logo_path']): ?>
+          <img src="<?= e($u['logo_path']) ?>" alt="" class="uni-pick-logo">
+        <?php else: ?>
+          <span class="uni-pick-logo uni-pick-logo-fallback"><i class="fa-solid fa-building-columns"></i></span>
+        <?php endif; ?>
+        <div class="uni-pick-name"><?= e($u['name']) ?></div>
+        <div class="uni-pick-meta"><?= $u['course_count'] ?> active course(s)</div>
       </button>
     </form>
   </div>
