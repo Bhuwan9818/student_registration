@@ -10,7 +10,7 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 // -----------------------------------------------
 
-define('BASE_URL', '/admission-portal'); // e.g. '/admission-portal' if hosted in a subfolder
+define('BASE_URL', ''); // e.g. '/admission-portal' if hosted in a subfolder
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -223,6 +223,17 @@ function deleteStudentRecord($pdo, $studentId) {
     $pdo->prepare("UPDATE activity_log SET student_id = NULL WHERE student_id = ?")->execute([$studentId]);
     $pdo->prepare("UPDATE students SET parent_student_id = NULL WHERE parent_student_id = ?")->execute([$studentId]);
     $pdo->prepare("DELETE FROM students WHERE id = ?")->execute([$studentId]);
+}
+
+// Available university-specific print form templates (key => display label)
+function printFormTemplateOptions() {
+    return [
+        ''             => 'Default (generic slip)',
+        'sgvu'         => 'Suresh Gyan Vihar University',
+        'amity'        => 'Amity University',
+        'mangalayatan' => 'Mangalayatan University',
+        'svsu'         => 'Swami Vivekanand Subharti University',
+    ];
 }
 
 function statusBadge($status) {

@@ -21,8 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_item'])) {
         $ins->execute([$activeUni['id'], $name, $duration, $seats]);
     } elseif ($type === 'university') {
         $logoPath = handleUpload('logo', 'university_logos', ['jpg','jpeg','png','svg','webp']);
-        $ins = $pdo->prepare("INSERT INTO universities (name, logo_path) VALUES (?, ?)");
-        $ins->execute([$name, $logoPath]);
+        $formTemplate = $_POST['form_template'] ?: null;
+        $ins = $pdo->prepare("INSERT INTO universities (name, logo_path, form_template) VALUES (?, ?, ?)");
+        $ins->execute([$name, $logoPath, $formTemplate]);
     } elseif ($type === 'session') {
         $ins = $pdo->prepare("INSERT INTO sessions_years (year_label) VALUES (?)");
         $ins->execute([$name]);
@@ -44,12 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_item'])) {
         $upd->execute([$name, $duration, $seats, $id]);
     } elseif ($type === 'university') {
         $logoPath = handleUpload('logo', 'university_logos', ['jpg','jpeg','png','svg','webp']);
+        $formTemplate = $_POST['form_template'] ?: null;
         if ($logoPath) {
-            $upd = $pdo->prepare("UPDATE universities SET name = ?, logo_path = ? WHERE id = ?");
-            $upd->execute([$name, $logoPath, $id]);
+            $upd = $pdo->prepare("UPDATE universities SET name = ?, logo_path = ?, form_template = ? WHERE id = ?");
+            $upd->execute([$name, $logoPath, $formTemplate, $id]);
         } else {
-            $upd = $pdo->prepare("UPDATE universities SET name = ? WHERE id = ?");
-            $upd->execute([$name, $id]);
+            $upd = $pdo->prepare("UPDATE universities SET name = ?, form_template = ? WHERE id = ?");
+            $upd->execute([$name, $formTemplate, $id]);
         }
     } elseif ($type === 'session') {
         $upd = $pdo->prepare("UPDATE sessions_years SET year_label = ? WHERE id = ?");
@@ -253,7 +255,13 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="text-muted small mb-2">No logo uploaded yet.</div>
               <?php endif; ?>
               <label class="form-label">Replace Logo <small class="text-muted">(optional)</small></label>
-              <input type="file" name="logo" class="form-control" accept=".jpg,.jpeg,.png,.svg,.webp">
+              <input type="file" name="logo" class="form-control mb-3" accept=".jpg,.jpeg,.png,.svg,.webp">
+              <label class="form-label">Printed Admission Form Layout</label>
+              <select name="form_template" class="form-select">
+                <?php foreach (printFormTemplateOptions() as $key => $label): ?>
+                  <option value="<?= e($key) ?>" <?= ($u['form_template'] ?? '') === $key ? 'selected' : '' ?>><?= e($label) ?></option>
+                <?php endforeach; ?>
+              </select>
             </div>
             <div class="modal-footer"><button type="submit" name="edit_item" value="1" class="btn btn-primary btn-sm">Save Changes</button></div>
           </form>
@@ -334,7 +342,14 @@ require_once __DIR__ . '/includes/header.php';
       <label class="form-label">University Name</label>
       <input type="text" name="name" class="form-control mb-2" required>
       <label class="form-label">University Logo <small class="text-muted">(optional)</small></label>
-      <input type="file" name="logo" class="form-control" accept=".jpg,.jpeg,.png,.svg,.webp">
+      <input type="file" name="logo" class="form-control mb-2" accept=".jpg,.jpeg,.png,.svg,.webp">
+      <label class="form-label">Printed Admission Form Layout</label>
+      <select name="form_template" class="form-select">
+        <?php foreach (printFormTemplateOptions() as $key => $label): ?>
+          <option value="<?= e($key) ?>"><?= e($label) ?></option>
+        <?php endforeach; ?>
+      </select>
+      <div class="small text-muted mt-1">Controls how the admission form looks when staff/admin print a student's registration for this university.</div>
     </div>
     <div class="modal-footer"><button type="submit" name="add_item" value="1" class="btn btn-primary btn-sm">Add</button></div>
   </form>
