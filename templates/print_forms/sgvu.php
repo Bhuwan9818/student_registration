@@ -1,121 +1,75 @@
 <?php
-// Suresh Gyan Vihar University — Admission Form template
-$check = function ($condition) { return $condition ? '&#9745;' : '&#9744;'; };
-$nameParts = trim($student['first_name'] . ' ' . $student['last_name']);
+// Suresh Gyan Vihar University — data overlaid directly on the actual scanned form image
+$check = function ($condition) { return $condition ? '&#10003;' : ''; };
 ?>
 <style>
-  .sgvu-form { max-width: 900px; margin: 0 auto; background: #fff; padding: 24px 30px; border: 1px solid #333; font-family: Arial, Helvetica, sans-serif; color: #111; font-size: .85rem; }
-  .sgvu-form h1 { color: #c0272d; font-size: 1.7rem; font-weight: 700; margin: 0; }
-  .sgvu-form .sub { font-size: .74rem; color: #333; margin-top: 2px; }
-  .sgvu-title { text-align: center; font-weight: 700; font-size: 1.15rem; letter-spacing: .05em; margin: 14px 0 10px; border-top: 2px solid #111; border-bottom: 2px solid #111; padding: 6px 0; }
-  .sgvu-field-row { display: flex; gap: 14px; margin-bottom: 8px; align-items: baseline; flex-wrap: wrap; }
-  .sgvu-field-row .lbl { font-weight: 700; font-size: .78rem; white-space: nowrap; }
-  .sgvu-field-row .val { border-bottom: 1px solid #111; flex: 1; min-height: 16px; padding: 0 4px; font-size: .82rem; }
-  .sgvu-box { border: 1px solid #111; padding: 10px; margin-top: 8px; }
-  .sgvu-photo-box { width: 110px; height: 130px; border: 1px solid #111; font-size: .68rem; text-align: center; padding: 4px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-  .sgvu-photo-box img { max-width: 100%; max-height: 100%; }
-  table.sgvu-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: .8rem; }
-  table.sgvu-table th, table.sgvu-table td { border: 1px solid #111; padding: 5px 6px; text-align: left; }
-  table.sgvu-table th { background: #f0f0f0; }
-  .sgvu-chk { margin-right: 14px; white-space: nowrap; font-size: .8rem; }
+  .ov-wrap { position: relative; width: 100%; max-width: 800px; margin: 0 auto; background: #fff; }
+  .ov-wrap img.bg { width: 100%; display: block; }
+  .ov-wrap .ov { position: absolute; font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 1.3vw; line-height: 1.1; white-space: nowrap; }
+  .ov-photo { position: absolute; object-fit: cover; }
+  @media print {
+    .ov-wrap .ov { font-size: 10.5px; }
+  }
 </style>
 
-<div class="sgvu-form">
-  <div class="d-flex justify-content-between align-items-start">
-    <div>
-      <h1>Suresh Gyan Vihar University</h1>
-      <div class="sub">Established under UGC U/S 22 of UGC Act 1956 through its notification no. F.9-38/2008(CPP-I)<br>dated 1 April 2009.</div>
-    </div>
-    <?php if ($student['university_logo']): ?><img src="<?= e($student['university_logo']) ?>" style="height:50px;" alt=""><?php endif; ?>
-  </div>
+<div class="ov-wrap">
+  <img class="bg" src="<?= BASE_URL ?>/assets/print_forms/sgvu.jpg" alt="Suresh Gyan Vihar University Form">
 
-  <div class="sgvu-title">ADMISSION FORM</div>
+  <div class="ov" style="left:33%; top:13.9%; letter-spacing:1px;"><?= e($student['registration_no']) ?></div>
+  <div class="ov" style="left:46%; top:18.3%;"><?= e($student['course_name']) ?></div>
+  <div class="ov" style="left:23%; top:19.9%;"><?= e($student['specialization'] ?: '-') ?></div>
 
-  <div class="d-flex justify-content-between gap-3">
-    <div class="flex-fill">
-      <div class="sgvu-field-row"><span class="lbl">Enrolment No. (Leave Blank):</span><span class="val"><?= e($student['registration_no']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">Course Code:</span><span class="val"></span><span class="lbl">Programme:</span><span class="val"><?= e($student['course_name']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">Specialization:</span><span class="val"><?= e($student['specialization'] ?: '-') ?></span></div>
-    </div>
-    <div class="sgvu-photo-box">
-      <?php if ($student['photo_path']): ?><img src="<?= e($student['photo_path']) ?>" alt="Photo"><?php else: ?>Paste box-sized photograph<?php endif; ?>
-    </div>
-  </div>
+  <div class="ov" style="left:19%; top:34%; text-transform:uppercase;"><?= e($student['first_name'] . ' ' . $student['last_name']) ?></div>
+  <div class="ov" style="left:19%; top:38%; text-transform:uppercase;"><?= e($student['father_name']) ?></div>
+  <div class="ov" style="left:19%; top:40.7%; text-transform:uppercase;"><?= e($student['mother_name']) ?></div>
 
-  <div class="sgvu-box">
-    <div class="sgvu-field-row"><span class="lbl">Name of Candidate:</span><span class="val" style="text-transform:uppercase;"><?= e($nameParts) ?></span></div>
-    <div class="sgvu-field-row"><span class="lbl">Father's Name:</span><span class="val" style="text-transform:uppercase;"><?= e($student['father_name']) ?></span></div>
-    <div class="sgvu-field-row"><span class="lbl">Mother's Name:</span><span class="val" style="text-transform:uppercase;"><?= e($student['mother_name']) ?></span></div>
-    <div class="sgvu-field-row">
-      <span class="lbl">Gender:</span>
-      <span class="sgvu-chk"><?= $check($student['gender'] === 'Male') ?> Male</span>
-      <span class="sgvu-chk"><?= $check($student['gender'] === 'Female') ?> Female</span>
-      <span class="lbl">Date of Birth:</span><span class="val"><?= e($student['dob']) ?></span>
-    </div>
-  </div>
+  <div class="ov" style="left:19.5%; top:42.3%;"><?= $check($student['gender'] === 'Male') ?></div>
+  <div class="ov" style="left:31%; top:42.3%;"><?= $check($student['gender'] === 'Female') ?></div>
+  <div class="ov" style="left:58%; top:41.4%;"><?= e($student['dob']) ?></div>
 
-  <div class="d-flex gap-3">
-    <div class="sgvu-box flex-fill">
-      <div style="font-weight:700; margin-bottom:4px;">PERMANENT ADDRESS:</div>
-      <div><?= e($student['address']) ?></div>
-      <div class="sgvu-field-row mt-2"><span class="lbl">Pin Code:</span><span class="val"><?= e($student['pincode']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">City:</span><span class="val"><?= e($student['city']) ?></span><span class="lbl">State:</span><span class="val"><?= e($student['state']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">Ph No.:</span><span class="val"><?= e($student['alt_mobile']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">Mob No.:</span><span class="val"><?= e($student['mobile']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">E-mail:</span><span class="val"><?= e($student['email']) ?></span></div>
-    </div>
-    <div class="sgvu-box flex-fill">
-      <div style="font-weight:700; margin-bottom:4px;">MAILING ADDRESS:</div>
-      <div><?= e($student['address']) ?></div>
-      <div class="sgvu-field-row mt-2"><span class="lbl">Pin Code:</span><span class="val"><?= e($student['pincode']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">City:</span><span class="val"><?= e($student['city']) ?></span><span class="lbl">State:</span><span class="val"><?= e($student['state']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">Ph No.:</span><span class="val"><?= e($student['district']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">Mob No.:</span><span class="val"><?= e($student['guardian_mobile']) ?></span></div>
-      <div class="sgvu-field-row"><span class="lbl">E-mail:</span><span class="val"><?= e($student['alt_email']) ?></span></div>
-    </div>
-  </div>
+  <div class="ov" style="left:5%; top:48.5%; white-space:normal; width:42%;"><?= e($student['address']) ?></div>
+  <div class="ov" style="left:33%; top:53.5%;"><?= e($student['pincode']) ?></div>
+  <div class="ov" style="left:13%; top:55.3%;"><?= e($student['city']) ?></div>
+  <div class="ov" style="left:45%; top:55.3%;"><?= e($student['state']) ?></div>
+  <div class="ov" style="left:17%; top:58.9%;"><?= e($student['alt_mobile']) ?></div>
+  <div class="ov" style="left:17%; top:58.9%;"><?= e($student['mobile']) ?></div>
+  <div class="ov" style="left:13%; top:60.5%;"><?= e($student['email']) ?></div>
 
-  <div class="sgvu-box">
-    <div class="sgvu-field-row">
-      <span class="lbl">Nationality:</span>
-      <span class="sgvu-chk"><?= $check(strtolower($student['nationality']) === 'indian') ?> Indian</span>
-      <span class="sgvu-chk"><?= $check(strtolower($student['nationality']) !== 'indian' && $student['nationality']) ?> Others (<?= e($student['nationality']) ?>)</span>
-    </div>
-    <div class="sgvu-field-row" style="flex-wrap:wrap;">
-      <span class="lbl">Category:</span>
-      <?php foreach (['General','SC','ST','OBC','EWS','Other'] as $cat): ?>
-        <span class="sgvu-chk"><?= $check($student['category'] === $cat) ?> <?= $cat ?></span>
-      <?php endforeach; ?>
-      <span class="sgvu-chk"><?= $check($student['employment_status'] === 'Employed') ?> Employed</span>
-      <span class="sgvu-chk"><?= $check($student['employment_status'] === 'Unemployed') ?> Unemployed</span>
-    </div>
-    <div class="sgvu-field-row"><span class="lbl">Have you ever been debarred by any University/Board?</span>
-      <span class="sgvu-chk"><?= $check(false) ?> No</span>
-      <span class="sgvu-chk"><?= $check(false) ?> Yes</span>
-    </div>
-  </div>
+  <div class="ov" style="left:54%; top:48.5%; white-space:normal; width:42%;"><?= e($student['address']) ?></div>
+  <div class="ov" style="left:81%; top:53.5%;"><?= e($student['pincode']) ?></div>
+  <div class="ov" style="left:63%; top:55.3%;"><?= e($student['city']) ?></div>
+  <div class="ov" style="left:88%; top:55.3%;"><?= e($student['state']) ?></div>
+  <div class="ov" style="left:65%; top:58.9%;"><?= e($student['district']) ?></div>
+  <div class="ov" style="left:66%; top:58.9%;"><?= e($student['guardian_mobile']) ?></div>
+  <div class="ov" style="left:59%; top:60.5%;"><?= e($student['alt_email']) ?></div>
 
-  <div style="font-weight:700; margin-top:10px;">DETAILS OF PREVIOUS EXAMINATIONS PASSED FROM OTHER UNIVERSITY</div>
-  <table class="sgvu-table">
-    <thead><tr><th style="width:30px;">S. No</th><th>Name of Exam</th><th>Roll No.</th><th>Year of Passing</th><th>Percent / Grade</th><th>Name of University / Board</th></tr></thead>
-    <tbody>
-      <?php $sn = 1; foreach ($academicLevels as $levelKey => $levelLabel): ?>
-        <?php $a = $academicsByLevel[$levelKey] ?? null; if (!$a || empty($a['institution_board'])) continue; ?>
-        <tr>
-          <td><?= $sn++ ?></td>
-          <td><?= e($levelLabel) ?></td>
-          <td>-</td>
-          <td><?= e($a['year_of_passing']) ?></td>
-          <td><?= e($a['percentage']) ?>%</td>
-          <td><?= e($a['institution_board']) ?></td>
-        </tr>
-      <?php endforeach; ?>
-      <?php if ($sn === 1): ?><tr><td colspan="6" class="text-center text-muted">No academic history on record.</td></tr><?php endif; ?>
-    </tbody>
-  </table>
+  <div class="ov" style="left:16%; top:66.2%;"><?= $check(strtolower($student['nationality']) === 'indian') ?></div>
+  <div class="ov" style="left:27.5%; top:66.2%;"><?= $check(strtolower($student['nationality']) !== 'indian' && $student['nationality']) ?></div>
 
-  <div class="d-flex justify-content-between mt-4" style="font-size:.78rem;">
-    <div>Signature of candidate (in full)</div>
-    <div>Registration No: <strong><?= e($student['registration_no']) ?></strong> &nbsp; | &nbsp; Issued: <?= date('d M Y') ?></div>
-  </div>
+  <?php
+    $catX = ['General' => 19, 'SC' => 29, 'ST' => 35, 'OBC' => 41.5, 'Other' => 90];
+    foreach ($catX as $catKey => $x):
+  ?>
+    <div class="ov" style="left:<?= $x ?>%; top:68.1%;"><?= $check($student['category'] === $catKey) ?></div>
+  <?php endforeach; ?>
+  <div class="ov" style="left:67%; top:68.1%;"><?= $check($student['employment_status'] === 'Employed') ?></div>
+  <div class="ov" style="left:78%; top:68.1%;"><?= $check($student['employment_status'] === 'Unemployed') ?></div>
+
+  <?php
+    $sn = 1;
+    $rowTop = 82;
+    foreach ($academicLevels as $levelKey => $levelLabel):
+      $a = $academicsByLevel[$levelKey] ?? null;
+      if (!$a || empty($a['institution_board'])) continue;
+  ?>
+    <div class="ov" style="left:6%; top:<?= $rowTop ?>%;"><?= $sn++ ?></div>
+    <div class="ov" style="left:12%; top:<?= $rowTop ?>%;"><?= e($levelLabel) ?></div>
+    <div class="ov" style="left:49%; top:<?= $rowTop ?>%;"><?= e($a['year_of_passing']) ?></div>
+    <div class="ov" style="left:60%; top:<?= $rowTop ?>%;"><?= e($a['percentage']) ?>%</div>
+    <div class="ov" style="left:73%; top:<?= $rowTop ?>%;"><?= e($a['institution_board']) ?></div>
+    <?php $rowTop += 2.15; endforeach; ?>
+
+  <?php if ($student['photo_path']): ?>
+    <img class="ov-photo" src="<?= e($student['photo_path']) ?>" style="left:83%; top:12.5%; width:14%; height:9%;" alt="Photo">
+  <?php endif; ?>
 </div>
