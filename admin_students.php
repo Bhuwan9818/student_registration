@@ -94,10 +94,10 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="registrations_' . date('Y-m-d') . '.csv"');
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['Reg No', 'Type', 'Name', 'Mobile', 'Email', 'Course', 'University', 'Session', 'Staff', 'Status', 'Fee Status', 'Date']);
+    fputcsv($out, ['Reg No', 'Enrollment No', 'Type', 'Name', 'Mobile', 'Email', 'Course', 'University', 'Session', 'Staff', 'Status', 'Fee Status', 'Date']);
     foreach ($students as $s) {
         fputcsv($out, [
-            $s['registration_no'], ucfirst($s['registration_type']), $s['first_name'] . ' ' . $s['last_name'], $s['mobile'], $s['email'],
+            $s['registration_no'], $s['enrollment_no'] ?? '', ucfirst($s['registration_type']), $s['first_name'] . ' ' . $s['last_name'], $s['mobile'], $s['email'],
             $s['course_name'], $s['university_name'], $s['year_label'], $s['staff_name'],
             $s['status'], $s['fee_status'] ?? 'not paid', $s['created_at']
         ]);
@@ -222,7 +222,7 @@ $exportQs['export'] = 'csv';
         <thead>
           <tr>
             <th style="width:32px;"><input type="checkbox" id="selectAllRows"></th>
-            <th>Reg No</th><th>Type</th><th>Name</th><th>Mobile</th><th>Course</th>
+            <th>Reg No</th><th>Enrollment No</th><th>Type</th><th>Name</th><th>Mobile</th><th>Course</th>
             <th>Session</th><th>Staff</th><th>Status</th><th>Fee</th><th></th>
           </tr>
         </thead>
@@ -231,6 +231,7 @@ $exportQs['export'] = 'csv';
           <tr>
             <td><input type="checkbox" class="row-check" name="ids[]" value="<?= $s['id'] ?>"></td>
             <td class="reg-no"><?= e($s['registration_no']) ?></td>
+            <td class="reg-no"><?= $s['enrollment_no'] ? e($s['enrollment_no']) : '<span class="text-muted">—</span>' ?></td>
             <td><span class="badge bg-<?= $s['registration_type'] == 'fresh' ? 'primary' : 'info' ?>"><?= $s['registration_type'] == 'fresh' ? 'Fresh' : 'Re-Reg' ?></span></td>
             <td><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
             <td><?= e($s['mobile']) ?></td>
@@ -246,13 +247,14 @@ $exportQs['export'] = 'csv';
             <td><?= $s['fee_status'] ? statusBadge($s['fee_status']) : '<span class="badge bg-light text-dark border">Not Paid</span>' ?></td>
             <td>
               <a href="student_detail.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
+              <a href="edit_student.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-pen"></i></a>
               <a href="print_slip.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fa-solid fa-print"></i></a>
               <button type="submit" name="delete_id" value="<?= $s['id'] ?>" formnovalidate class="btn btn-sm btn-outline-danger" onclick="return confirm('Permanently delete this registration? This cannot be undone.');"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>
           <?php endforeach; ?>
           <?php if (!$students): ?>
-            <tr><td colspan="11" class="text-center text-muted py-4">No records match the selected filters.</td></tr>
+            <tr><td colspan="12" class="text-center text-muted py-4">No records match the selected filters.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>

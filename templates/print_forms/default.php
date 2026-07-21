@@ -34,6 +34,7 @@
     </div>
     <div class="ms-auto text-end">
       <div class="mono" style="font-size:1rem;"><?= e($student['registration_no']) ?></div>
+      <?php if ($student['enrollment_no']): ?><div class="mono" style="font-size:.82rem; opacity:.85;">Enrollment: <?= e($student['enrollment_no']) ?></div><?php endif; ?>
       <div style="font-size:.72rem; opacity:.7;">Issued <?= date('d M Y') ?></div>
     </div>
   </div>

@@ -18,6 +18,7 @@ $check = function ($condition) { return $condition ? '&#10003;' : ''; };
   <img class="bg" src="<?= BASE_URL ?>/assets/print_forms/svsu_p1.jpg" alt="SVSU Form Page 1">
 
   <div class="ov" style="left:22%; top:10%;"><?= e($student['registration_no']) ?></div>
+  <div class="ov" style="left:37%; top:26.8%; letter-spacing:2px;"><?= e($student['enrollment_no'] ?? '') ?></div>
   <div class="ov" style="left:37%; top:30.5%;"><?= e($student['course_name']) ?><?= $student['specialization'] ? ' — ' . e($student['specialization']) : '' ?></div>
 
   <div class="ov" style="left:8%; top:35.8%; text-transform:uppercase;"><?= e($student['first_name'] . ' ' . $student['last_name']) ?></div>

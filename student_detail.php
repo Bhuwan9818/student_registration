@@ -88,6 +88,7 @@ require_once __DIR__ . '/includes/header.php';
   <div class="d-flex gap-2">
     <a href="print_slip.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Print Slip</a>
     <?php if (isAdmin()): ?>
+      <a href="edit_student.php?id=<?= $student['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i> Edit</a>
       <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa-solid fa-trash"></i> Delete</button>
     <?php endif; ?>
     <a href="<?= isAdmin() ? 'admin_students.php' : 'my_students.php' ?>" class="btn btn-sm btn-outline-secondary">
@@ -104,6 +105,9 @@ require_once __DIR__ . '/includes/header.php';
           <h5 class="mb-0"><?= e($student['first_name'] . ' ' . $student['last_name']) ?></h5>
           <span class="reg-no"><?= e($student['registration_no']) ?></span>
           <span class="badge bg-<?= $student['registration_type'] == 'fresh' ? 'primary' : 'info' ?> ms-1"><?= $student['registration_type'] == 'fresh' ? 'Fresh' : 'Re-Registration' ?></span>
+          <?php if ($student['enrollment_no']): ?>
+            <div class="small text-muted mt-1">Enrollment No: <span class="reg-no"><?= e($student['enrollment_no']) ?></span></div>
+          <?php endif; ?>
         </div>
         <?= statusBadge($student['status']) ?>
       </div>
