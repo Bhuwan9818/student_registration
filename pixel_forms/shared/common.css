@@ -1,0 +1,130 @@
+/* ============================================================
+   common.css — shared base styles for all printable admission
+   forms (page setup, fonts, character boxes, checkboxes, tables,
+   photo/signature boxes). Each university's own stylesheet is
+   loaded AFTER this one and only adds form-specific rules.
+   ============================================================ */
+
+@page {
+    size: A4;
+    margin: 8mm;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: #e9e9e9;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+    font-size: 11px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 6mm auto;
+    background: #fff;
+    padding: 6mm 7mm;
+    border: 1px solid #999;
+}
+
+@media print {
+    body { background: #fff; }
+    .sheet {
+        width: auto;
+        min-height: auto;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+        page-break-after: always;
+    }
+    .no-print { display: none !important; }
+}
+
+.no-print {
+    text-align: center;
+    padding: 10px;
+}
+.no-print button {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    padding: 8px 20px;
+    cursor: pointer;
+}
+
+/* ---------- Individual character boxes ---------- */
+.char-boxes {
+    display: flex;
+    flex-wrap: nowrap;
+}
+.char-box {
+    border: 1px solid #000;
+    border-left: none;
+    width: 15px;
+    height: 18px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1;
+}
+.char-box:first-child { border-left: 1px solid #000; }
+
+/* ---------- Tick / checkbox squares ---------- */
+.tick-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    border: 1px solid #000;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 0 4px 0 2px;
+    vertical-align: middle;
+}
+
+/* ---------- Photo / signature boxes ---------- */
+.photo-box, .signature-box {
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    font-size: 9px;
+    color: #333;
+    line-height: 1.3;
+}
+.photo-box img, .signature-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ---------- Generic tables ---------- */
+table.form-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+table.form-table th, table.form-table td {
+    border: 1px solid #000;
+    padding: 3px 5px;
+    vertical-align: middle;
+}
+table.form-table th { font-weight: bold; background: #fff; }
+
+/* ---------- Section headings ---------- */
+.section-line {
+    border-top: 1.5px solid #000;
+    margin: 4px 0;
+}

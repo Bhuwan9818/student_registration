@@ -74,7 +74,7 @@ if (!empty($_GET['q'])) {
 $whereSql = 'WHERE ' . implode(' AND ', $where);
 
 $sql = "SELECT s.*, u.full_name as staff_name, pu.full_name as center_name, c.name as course_name, un.name as university_name,
-               sy.year_label,
+               un.form_template, sy.year_label,
                (SELECT status FROM fees f WHERE f.student_id = s.id ORDER BY f.id DESC LIMIT 1) as fee_status
         FROM students s
         LEFT JOIN users u ON u.id = s.created_by
@@ -248,7 +248,10 @@ $exportQs['export'] = 'csv';
             <td>
               <a href="student_detail.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
               <a href="edit_student.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-pen"></i></a>
-              <a href="print_slip.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fa-solid fa-print"></i></a>
+              <!-- <a href="print_slip.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fa-solid fa-print"></i></a> -->
+              <?php if (in_array($s['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu'], true)): ?>
+                <a href="print_pixel.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fa-solid fa-file-lines"></i></a>
+              <?php endif; ?>
               <button type="submit" name="delete_id" value="<?= $s['id'] ?>" formnovalidate class="btn btn-sm btn-outline-danger" onclick="return confirm('Permanently delete this registration? This cannot be undone.');"><i class="fa-solid fa-trash"></i></button>
             </td>
           </tr>

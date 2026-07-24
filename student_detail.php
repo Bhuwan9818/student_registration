@@ -5,7 +5,7 @@ requireLogin();
 $id = (int)($_GET['id'] ?? 0);
 
 $stmt = $pdo->prepare("SELECT s.*, u.full_name as staff_name, c.name as course_name,
-                               un.name as university_name, sy.year_label
+                               un.name as university_name, un.form_template, sy.year_label
                         FROM students s
                         LEFT JOIN users u ON u.id = s.created_by
                         LEFT JOIN courses c ON c.id = s.course_id
@@ -86,7 +86,10 @@ require_once __DIR__ . '/includes/header.php';
     <h4><?= e($student['first_name'] . ' ' . $student['last_name']) ?></h4>
   </div>
   <div class="d-flex gap-2">
-    <a href="print_slip.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Print Slip</a>
+    <!-- <a href="print_slip.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Print Slip</a> -->
+    <?php if (in_array($student['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu'], true)): ?>
+      <a href="print_pixel.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-file-lines"></i> Print </a>
+    <?php endif; ?>
     <?php if (isAdmin()): ?>
       <a href="edit_student.php?id=<?= $student['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i> Edit</a>
       <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa-solid fa-trash"></i> Delete</button>
