@@ -1,0 +1,71 @@
+/* ============================================================
+   Amity admission-form.php — form-specific styles
+   (loaded after ../shared/common.css)
+   ============================================================ */
+
+.header-table { width: 100%; border-collapse: collapse; }
+.header-table td { border: none; padding: 0; vertical-align: middle; }
+.logo-cell { width: 30%; }
+.uni-logo { height: 46px; }
+.divider-cell { font-size: 26px; font-weight: 300; color: #1c3f6e; padding: 0 10px; width: 2%; }
+.dept-cell { width: 68%; }
+.dept-name { font-size: 15px; font-weight: 700; color: #1c1c1c; line-height: 1.2; letter-spacing: .5px; }
+
+.header-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #1c3f6e 60%, #d9a520 60%);
+    margin: 6px 0 10px;
+}
+
+.form-title-block { text-align: center; margin-bottom: 8px; }
+.form-title { font-size: 15px; font-weight: 700; text-decoration: underline; }
+.session-line { font-size: 11px; margin-top: 6px; }
+.dots { letter-spacing: 2px; }
+
+.top-photo {
+    float: right;
+    width: 95px;
+    height: 115px;
+    margin: -46px 0 8px 10px;
+    font-size: 8px;
+    padding: 4px;
+}
+
+.field-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    clear: none;
+}
+.field-label { font-weight: bold; font-size: 10.5px; white-space: nowrap; }
+.field-sub { font-size: 8px; font-style: italic; }
+.dotted-fill { border-bottom: 1px dotted #000; flex: 1; min-width: 60px; padding: 0 4px; font-size: 10.5px; }
+.boxed-fill { border: 1px solid #000; flex: 1; height: 16px; margin-left: 6px; }
+
+.name-row { align-items: flex-start; }
+.name-label-block { width: 150px; flex-shrink: 0; }
+.mr-mrs-block { font-size: 10px; display: flex; flex-direction: column; gap: 2px; }
+.name-parts { display: flex; flex: 1; gap: 10px; }
+.name-part { flex: 1; text-align: center; }
+.name-part-label { display: block; font-size: 8.5px; font-style: italic; text-align: center; }
+
+.two-col-row { display: flex; gap: 20px; margin-bottom: 8px; }
+.two-col-row .col { flex: 1; display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+
+.dob-sub { display: flex; gap: 16px; font-size: 8px; font-style: italic; margin-left: 4px; }
+
+.inline-check { font-size: 10px; margin-right: 10px; white-space: nowrap; }
+
+.history-table, .qual-table { margin-top: 4px; }
+.history-table th, .history-table td,
+.qual-table th, .qual-table td { font-size: 9px; text-align: center; height: 22px; }
+
+.footer-block {
+    text-align: center;
+    font-size: 8.5px;
+    margin-top: 14px;
+    border-top: 1px solid #000;
+    padding-top: 6px;
+}
