@@ -1,0 +1,95 @@
+/* ============================================================
+   Mangalayatan admission-form.php — form-specific styles
+   (loaded after ../shared/common.css)
+   ============================================================ */
+
+body { font-size: 8.5px; }
+
+.topbar-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #16305c;
+    margin-bottom: 6px;
+}
+.topbar-table td { border: 1px solid #fff; padding: 4px 8px; color: #fff; font-size: 9px; }
+.topbar-remarks { width: 22%; font-weight: bold; }
+.topbar-remarks-box { width: 28%; background: #fff; }
+.topbar-appno { width: 22%; font-weight: bold; text-align: right; }
+.topbar-appno-box { width: 28%; background: #fff; color: #000; font-weight: bold; }
+
+.header-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+.header-table td { border: none; padding: 0; vertical-align: middle; }
+.logo-cell { width: 22%; }
+.uni-logo { height: 44px; }
+.uni-logo.small { height: 30px; }
+.title-cell { width: 56%; text-align: center; }
+.form-title { color: #e07b1a; font-size: 20px; font-weight: 800; }
+.seal-cell { width: 22%; text-align: right; }
+.uni-seal { height: 46px; }
+.uni-seal.small { height: 32px; }
+
+.contact-line { text-align: right; font-size: 8px; margin-bottom: 4px; }
+.header-rule { border-top: 2px solid #16305c; margin-bottom: 6px; }
+
+.instructions-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+.instructions-table td { border: none; padding: 0; vertical-align: top; }
+.instructions-cell { width: 78%; padding-right: 10px; }
+.instructions-title { color: #16305c; font-weight: 800; font-size: 11px; margin-bottom: 3px; }
+.instructions-list { margin: 0; padding-left: 16px; font-size: 8.5px; line-height: 1.4; }
+.instructions-photo-cell { width: 22%; text-align: center; }
+
+.program-title { color: #e07b1a; font-weight: 800; font-size: 13px; margin: 4px 0 6px; }
+
+.program-columns { width: 100%; border-collapse: collapse; }
+.program-columns td.program-col {
+    border: none;
+    vertical-align: top;
+    width: 33.33%;
+    padding: 0 5px;
+    font-size: 7.6px;
+    line-height: 1.25;
+}
+
+.group-header {
+    color: #fff;
+    font-weight: 700;
+    padding: 2px 5px;
+    margin: 3px 0 2px;
+    font-size: 7.8px;
+}
+.group-header.navy { background: #16305c; }
+.group-header.orange { background: #e07b1a; }
+
+.program-note { font-style: italic; font-size: 7.2px; margin: 1px 0 2px; }
+
+.program-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 3px;
+    margin-bottom: 1.5px;
+}
+.program-item .tick-box { width: 9px; height: 9px; margin: 1px 3px 0 0; flex-shrink: 0; }
+
+.cut-line { font-size: 10px; text-align: center; margin: 8px 0; letter-spacing: 1px; }
+
+.receipt-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+.receipt-table td { border: none; padding: 0; vertical-align: middle; }
+.receipt-title-cell { text-align: center; }
+.receipt-title { color: #16305c; font-size: 14px; font-weight: 800; text-decoration: underline; }
+.receipt-seal-cell { text-align: right; }
+
+.field-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 9.5px;
+    flex-wrap: wrap;
+}
+.field-label { font-weight: bold; white-space: nowrap; }
+.dotted-fill { border-bottom: 1px dotted #000; flex: 1; min-width: 60px; padding: 0 4px; }
+.dotted-fill.short { flex: none; width: 110px; }
+.boxed-fill { border: 1px solid #000; min-width: 140px; height: 16px; padding: 0 4px; }
+
+.signature-line { justify-content: space-between; margin-top: 20px; }
+.sign-label { color: #e07b1a; font-weight: bold; }
