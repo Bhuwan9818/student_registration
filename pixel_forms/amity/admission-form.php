@@ -70,12 +70,12 @@ $levelLabels = ['10th' => 'High School (10th)', '12th' => 'Intermediate (12th)',
   <table class="header-table">
     <tr>
       <td class="logo-cell">
-        <img src="assets/amity-logo.png" alt="Amity University" class="uni-logo">
+        <img src="assets/amity-logo.jpeg" alt="Amity University" class="uni-logo">
       </td>
-      <td class="divider-cell">|</td>
+      <!-- <td class="divider-cell">|</td>
       <td class="dept-cell">
         <div class="dept-name">DIRECTORATE OF DISTANCE &amp;<br>ONLINE EDUCATION</div>
-      </td>
+      </td> -->
     </tr>
   </table>
   <div class="header-bar"></div>
