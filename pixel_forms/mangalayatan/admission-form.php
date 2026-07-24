@@ -152,7 +152,7 @@ function isSelectedProgram(string $itemText, string $courseName): bool
     <tr>
       <td class="logo-cell"><img src="assets/mangalayatan-logo.png" alt="Mangalayatan University" class="uni-logo"></td>
       <td class="title-cell"><div class="form-title">APPLICATION FORM</div></td>
-      <td class="seal-cell"><img src="assets/mangalayatan-seal.png" alt="" class="uni-seal"></td>
+      <!-- <td class="seal-cell"><img src="assets/mangalayatan-seal.png" alt="" class="uni-seal"></td> -->
     </tr>
   </table>
   <div class="contact-line">
@@ -220,7 +220,7 @@ function isSelectedProgram(string $itemText, string $courseName): bool
     <tr>
       <td class="receipt-logo-cell"><img src="assets/mangalayatan-logo.png" alt="Mangalayatan University" class="uni-logo small"></td>
       <td class="receipt-title-cell"><div class="receipt-title">Form Receipt</div></td>
-      <td class="receipt-seal-cell"><img src="assets/mangalayatan-seal.png" alt="" class="uni-seal small"></td>
+      <!-- <td class="receipt-seal-cell"><img src="assets/mangalayatan-seal.png" alt="" class="uni-seal small"></td> -->
     </tr>
   </table>
   <div class="field-row">

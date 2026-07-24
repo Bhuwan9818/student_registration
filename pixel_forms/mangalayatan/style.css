@@ -11,11 +11,11 @@ body { font-size: 8.5px; }
     background: #16305c;
     margin-bottom: 6px;
 }
-.topbar-table td { border: 1px solid #fff; padding: 4px 8px; color: #fff; font-size: 9px; }
+.topbar-table td { border: 1px solid #000000; padding: 4px 8px; color: #fff; font-size: 9px; }
 .topbar-remarks { width: 22%; font-weight: bold; }
-.topbar-remarks-box { width: 28%; background: #fff; }
-.topbar-appno { width: 22%; font-weight: bold; text-align: right; }
-.topbar-appno-box { width: 28%; background: #fff; color: #000; font-weight: bold; }
+.topbar-remarks-box { width: 28%; background: #fff; color: black; }
+.topbar-appno { width: 22%; font-weight: bold; text-align: center; }
+.topbar-appno-box { width: 28%; background: #fff; color: #000 !important; font-weight: bold; }
 
 .header-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
 .header-table td { border: none; padding: 0; vertical-align: middle; }
