@@ -2,9 +2,6 @@
 require_once __DIR__ . '/config/config.php';
 requireAdmin();
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 
 $id = (int)($_GET['id'] ?? 0);
 $stmt = $pdo->prepare("SELECT s.*, un.name as university_name FROM students s
