@@ -10,10 +10,12 @@ $activeUni = getActiveUniversity($pdo);
 $currentPage = basename($_SERVER['PHP_SELF']);
 $centersGroupPages    = ['admin_centers.php', 'center_detail.php', 'fee_report.php'];
 $subcentersGroupPages = ['admin_subcenters.php', 'subcenter_detail.php', 'fee_report.php', 'student_ledger.php'];
+$masterGroupPages     = ['admin_courses.php', 'admin_universities.php', 'admin_sessions.php', 'sub_courses.php', 'course_fees.php'];
 $currentScope = $_GET['scope'] ?? '';
 
 $centersGroupOpen    = in_array($currentPage, $centersGroupPages) && $currentScope !== 'subcenter';
 $subcentersGroupOpen = in_array($currentPage, $subcentersGroupPages) && ($currentScope === 'subcenter' || $currentPage === 'admin_subcenters.php' || $currentPage === 'subcenter_detail.php' || $currentPage === 'student_ledger.php');
+$masterGroupOpen      = in_array($currentPage, $masterGroupPages);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -75,7 +77,15 @@ $subcentersGroupOpen = in_array($currentPage, $subcentersGroupPages) && ($curren
           <a href="<?= BASE_URL ?>/student_ledger.php" class="nav-sub-link <?= active('student_ledger.php') ?>">Student Ledger</a>
         </div>
 
-        <a href="<?= BASE_URL ?>/admin_master.php" class="<?= active('admin_master.php') ?>"><i class="fa-solid fa-sliders"></i> Master Data</a>
+        <a href="#masterMenu" class="nav-group-toggle" data-bs-toggle="collapse" role="button" aria-expanded="<?= $masterGroupOpen ? 'true' : 'false' ?>">
+          <span><i class="fa-solid fa-sliders"></i> Master Data</span>
+          <i class="fa-solid fa-chevron-down chevron"></i>
+        </a>
+        <div class="collapse <?= $masterGroupOpen ? 'show' : '' ?>" id="masterMenu">
+          <a href="<?= BASE_URL ?>/admin_courses.php" class="nav-sub-link <?= active('admin_courses.php') ?>">Courses</a>
+          <a href="<?= BASE_URL ?>/admin_universities.php" class="nav-sub-link <?= active('admin_universities.php') ?>">Universities</a>
+          <a href="<?= BASE_URL ?>/admin_sessions.php" class="nav-sub-link <?= active('admin_sessions.php') ?>">Sessions / Years</a>
+        </div>
       <?php else: ?>
         <span class="sidebar-section-label">Overview</span>
         <a href="<?= BASE_URL ?>/staff_dashboard.php" class="<?= active('staff_dashboard.php') ?>"><i class="fa-solid fa-gauge"></i> Dashboard</a>
