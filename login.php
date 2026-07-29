@@ -43,31 +43,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <link href="assets/css/style.css" rel="stylesheet">
 </head>
-<body>
-<div class="login-wrapper">
-  <div class="login-card">
-    <div class="text-center mb-4">
-      <img src="assets/img/logo.png" alt="VS Academy" style="width:90px; height:auto; margin-bottom:8px;">
-      <h4 class="mt-1 mb-0">VS Academy</h4>
-      <div style="font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:#C79A42; font-weight:600;">Admission Portal</div>
-      <small class="text-muted d-block mt-1">Sign in to manage admissions</small>
+<body class="login-page">
+<div class="login-shell">
+
+  <!-- Illustrated brand panel -->
+  <div class="login-aside">
+    <div class="login-aside-top">
+      <img src="assets/img/logo.png" alt="VS Academy">
+      <div class="login-aside-brand">VS Academy<small>Admission Portal</small></div>
     </div>
-    <?php if ($error): ?>
-      <div class="alert alert-danger py-2 small"><?= e($error) ?></div>
-    <?php endif; ?>
-    <form method="POST">
-      <div class="mb-3">
-        <label class="form-label small fw-semibold">Username</label>
-        <input type="text" name="username" class="form-control" required autofocus>
+
+    <div class="login-aside-mid">
+      <svg class="login-seal" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <path id="sealRing" d="M 100,100 m -80,0 a 80,80 0 1,1 160,0 a 80,80 0 1,1 -160,0" />
+        </defs>
+        <circle cx="100" cy="100" r="96" fill="none" stroke="#E8C568" stroke-opacity=".55" stroke-width="1"/>
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#E8C568" stroke-opacity=".8" stroke-width="1" stroke-dasharray="1 5"/>
+        <text font-family="'IBM Plex Mono', monospace" font-size="10.5" letter-spacing="3" fill="#E8C568" fill-opacity=".85">
+          <textPath href="#sealRing" startOffset="0%">VS ACADEMY • ADMISSION REGISTRY • EST. PORTAL • </textPath>
+        </text>
+        <g transform="translate(100,100)" fill="none" stroke="#E8C568" stroke-width="1.3">
+          <polygon points="0,-36 8.5,-8.5 36,0 8.5,8.5 0,36 -8.5,8.5 -36,0 -8.5,-8.5"/>
+          <circle r="5" fill="#E8C568" stroke="none"/>
+        </g>
+      </svg>
+      <div>
+        <h1 class="login-aside-headline">Admissions, handled with <em>precision</em>.</h1>
+        <p class="login-aside-sub">One registry for every university, course, and student file your team manages — sign in to continue.</p>
       </div>
-      <div class="mb-3">
-        <label class="form-label small fw-semibold">Password</label>
-        <input type="password" name="password" class="form-control" required>
-      </div>
-      <button type="submit" class="btn btn-primary w-100 py-2">Sign In</button>
-    </form>
-    
+    </div>
+
+    <div class="login-aside-bottom">
+      <span>Multi-University Registry</span>
+      <span class="dot"></span>
+      <span>Staff &amp; Admin Access</span>
+    </div>
   </div>
+
+  <!-- Sign-in form -->
+  <div class="login-main">
+    <div class="login-card">
+      <div class="text-center mb-4">
+        <div class="login-mark"><i class="fa-solid fa-graduation-cap"></i></div>
+        <span class="eyebrow-gold">Admission Portal</span>
+        <h4 class="mt-1 mb-0">Welcome back</h4>
+        <small class="text-muted d-block mt-1">Sign in to manage admissions</small>
+      </div>
+      <?php if ($error): ?>
+        <div class="alert alert-danger py-2 small"><?= e($error) ?></div>
+      <?php endif; ?>
+      <form method="POST">
+        <div class="login-field">
+          <label for="username">Username</label>
+          <div class="login-input-group">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" id="username" name="username" required autofocus autocomplete="username">
+          </div>
+        </div>
+        <div class="login-field">
+          <label for="password">Password</label>
+          <div class="login-input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="password" name="password" required autocomplete="current-password">
+          </div>
+        </div>
+        <button type="submit" class="login-submit">Sign In</button>
+      </form>
+      <div class="login-foot">Access is limited to authorized registrar staff.</div>
+    </div>
+  </div>
+
 </div>
 </body>
 </html>
