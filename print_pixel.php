@@ -33,8 +33,8 @@ if (($student['form_template'] ?? '') === 'svsu') {
     $fee = $feeStmt->fetch();
 }
 
-// Only these four university layouts have a pixel-accurate recreation
-$pixelForms = ['sgvu', 'amity', 'mangalayatan', 'svsu'];
+// Only these university layouts have a pixel-accurate recreation
+$pixelForms = ['sgvu', 'amity', 'mangalayatan', 'svsu', 'dypatil', 'smu', 'vgu', 'preetiglobal'];
 $folder = in_array($student['form_template'] ?? '', $pixelForms, true) ? $student['form_template'] : null;
 
 if (!$folder) {
