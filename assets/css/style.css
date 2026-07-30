@@ -575,162 +575,37 @@ a { color: var(--navy-light); }
 }
 
 /* ============================================================
-   Login page — split-screen registrar's-ledger presentation
-   Left: illustrated brand panel (ruled ledger lines + brass seal)
-   Right: refined sign-in card
+   Login page — sliding toggle-panel presentation
+   A colored overlay panel (illustration + welcome copy) covers
+   the whole screen by default; clicking "Sign In" slides it
+   aside to reveal the real sign-in form underneath.
    ============================================================ */
-.login-page { background: var(--surface); }
+.login-page { background: var(--surface); overflow: hidden; }
 
 .login-shell {
   min-height: 100vh;
   display: flex;
-}
-
-/* ---- Left: illustrated aside ---- */
-.login-aside {
-  position: relative;
-  flex: 1 1 52%;
-  min-width: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 56px 64px;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(232,197,104,.16), transparent 42%),
-    radial-gradient(circle at 85% 92%, rgba(46,95,166,.35), transparent 50%),
-    linear-gradient(160deg, var(--ink) 0%, var(--navy) 130%);
-  color: #fff;
 }
 
-/* faint horizontal ledger rules across the whole panel */
-.login-aside::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(232,197,104,.09) 0,
-    rgba(232,197,104,.09) 1px,
-    transparent 1px,
-    transparent 38px
-  );
-  pointer-events: none;
-}
-
-/* the gold "margin rule" of a ledger page */
-.login-aside::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 108px;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, rgba(232,197,104,.4) 15%, rgba(232,197,104,.4) 85%, transparent);
-  pointer-events: none;
-}
-
-.login-aside-top,
-.login-aside-bottom {
-  position: relative;
-  z-index: 1;
-}
-
-.login-aside-top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.login-aside-top img { width: 34px; height: auto; }
-
-.login-aside-brand {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #fff;
-  line-height: 1.1;
-}
-
-.login-aside-brand small {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: .62rem;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--gold-light);
-  font-weight: 500;
-  margin-top: 2px;
-}
-
-.login-aside-mid {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 44px;
-  margin: auto 0;
-}
-
-.login-seal {
-  flex: 0 0 auto;
-  width: 148px;
-  height: 148px;
-  animation: seal-spin 90s linear infinite;
-}
-@media (prefers-reduced-motion: reduce) { .login-seal { animation: none; } }
-@keyframes seal-spin { to { transform: rotate(360deg); } }
-
-.login-aside-headline {
-  font-family: var(--font-display);
-  font-size: 2.15rem;
-  line-height: 1.18;
-  font-weight: 600;
-  color: #fff;
-  max-width: 380px;
-  margin: 0 0 14px;
-}
-.login-aside-headline em { font-style: normal; color: var(--gold-light); }
-
-.login-aside-sub {
-  font-size: .92rem;
-  line-height: 1.6;
-  color: rgba(255,255,255,.68);
-  max-width: 360px;
-  margin: 0;
-}
-
-.login-aside-bottom {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: .68rem;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.5);
-}
-.login-aside-bottom .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--gold); flex: none; }
-
-/* ---- Right: form panel ---- */
-.login-main {
-  flex: 1 1 48%;
+/* ---- Form panel (revealed once the overlay slides aside) ---- */
+.auth-form-panel {
+  flex: 0 0 0%;
+  min-width: 0;
+  opacity: 0;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
   background: var(--canvas);
+  transition: flex-basis .65s cubic-bezier(.65,0,.35,1), opacity .4s ease .18s;
 }
+.login-shell.is-open .auth-form-panel { flex-basis: 56%; opacity: 1; }
 
 .login-card {
-  background: var(--surface);
-  border-radius: 18px;
-  padding: 46px 44px 38px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 30px 70px rgba(10,31,71,.12), 0 4px 16px rgba(10,31,71,.06);
-  border-top: 3px solid var(--gold);
-  position: relative;
+  max-width: 380px;
+  padding: 40px 24px;
 }
 
 .login-mark {
@@ -790,13 +665,12 @@ a { color: var(--navy-light); }
   border-radius: 9px;
   font-size: .92rem;
   color: var(--ink-text);
-  background: var(--canvas);
+  background: #fff;
   transition: border-color .15s, background .15s, box-shadow .15s;
 }
 .login-input-group input:focus {
   outline: none;
   border-color: var(--gold);
-  background: #fff;
   box-shadow: 0 0 0 3px rgba(199,154,66,.15);
 }
 
@@ -826,21 +700,187 @@ a { color: var(--navy-light); }
   border-top: 1px dashed var(--border);
 }
 
+/* ---- Overlay panel: colored, illustrated, slides to reveal the form ---- */
+.auth-overlay {
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
+  overflow: hidden;
+  transition: flex-basis .65s cubic-bezier(.65,0,.35,1);
+}
+.login-shell.is-open .auth-overlay { flex-basis: 44%; }
+
+.auth-overlay-shape {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% 12%, rgba(232,197,104,.22), transparent 42%),
+    radial-gradient(circle at 15% 92%, rgba(46,95,166,.5), transparent 48%),
+    linear-gradient(150deg, #0A1F47 0%, #0F3A78 78%, #133F82 100%);
+  /* flush by default — the panel spans the full screen, so its left edge
+     sits on the screen boundary and has nothing to curve against yet */
+  clip-path: url(#authEdgeFlush);
+}
+.login-shell.is-open .auth-overlay-shape {
+  /* once shrunk aside, the edge meets the form panel — curve it here */
+  clip-path: url(#authEdgeWave);
+  filter: drop-shadow(-18px 0 42px rgba(6,20,48,.4));
+}
+
+/* film-grain texture for a tactile, non-flat surface */
+.auth-overlay-shape::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: .05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  clip-path: url(#authEdgeFlush);
+}
+.login-shell.is-open .auth-overlay-shape::before { clip-path: url(#authEdgeWave); }
+
+.auth-overlay-inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 40px 48px;
+  color: #fff;
+}
+
+.auth-brand {
+  position: absolute;
+  top: 40px;
+  left: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.auth-brand img { width: 32px; height: auto; }
+.auth-brand-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.auth-brand-name small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* illustration + copy centered together as one cohesive group */
+.auth-overlay-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auth-illustration {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .65s cubic-bezier(.65,0,.35,1), opacity .5s ease, margin .5s ease;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 18px 26px rgba(0,0,0,.28));
+}
+.auth-illustration svg { width: 100%; height: 100%; max-height: 300px; }
+.login-shell.is-open .auth-illustration { transform: scale(.6); margin-bottom: -6px; opacity: .95; }
+
+.auth-overlay-text { flex: 0 0 auto; text-align: center; }
+
+.auth-headline {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.18;
+  margin: 0 0 10px;
+}
+
+.auth-sub {
+  font-size: .88rem;
+  line-height: 1.55;
+  color: rgba(255,255,255,.7);
+  max-width: 320px;
+  margin: 0 auto 22px;
+}
+
+.auth-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 30px;
+  border: 1.5px solid rgba(232,197,104,.6);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  font-size: .85rem;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: background .18s, border-color .18s, transform .15s;
+}
+.auth-toggle-btn:hover { background: rgba(232,197,104,.14); border-color: var(--gold-light); transform: translateY(-1px); }
+
+.auth-state-open { display: none; }
+.login-shell.is-open .auth-state-closed { display: none; }
+.login-shell.is-open .auth-state-open { display: block; }
+.login-shell.is-open .auth-headline { font-size: 1.5rem; }
+.login-shell.is-open .auth-sub { margin-bottom: 14px; }
+
+.auth-back-btn {
+  background: none;
+  border: none;
+  color: var(--gold-light);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.auth-back-btn:hover { color: #fff; }
+
 @media (max-width: 991.98px) {
-  .login-shell { flex-direction: column; }
-  .login-aside { flex: 0 0 auto; padding: 32px 28px; min-height: 0; }
-  .login-aside::after { display: none; }
-  .login-aside-mid { margin: 22px 0; gap: 24px; }
-  .login-seal { width: 74px; height: 74px; }
-  .login-aside-headline { font-size: 1.4rem; max-width: none; }
-  .login-aside-sub { display: none; }
-  .login-aside-bottom { display: none; }
-  .login-main { padding: 32px 20px 44px; }
+  .login-shell { flex-direction: column; height: auto; min-height: 100vh; }
+  .auth-form-panel,
+  .login-shell.is-open .auth-form-panel { flex: 1 1 auto; opacity: 1; padding: 32px 20px 44px; order: 2; }
+  .auth-overlay,
+  .login-shell.is-open .auth-overlay { flex: 0 0 auto; order: 1; }
+  .auth-overlay-shape,
+  .auth-overlay-shape::before,
+  .login-shell.is-open .auth-overlay-shape,
+  .login-shell.is-open .auth-overlay-shape::before { clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%); }
+  .auth-overlay-shape,
+  .login-shell.is-open .auth-overlay-shape { filter: none; }
+  .auth-overlay-inner { padding: 26px 24px 34px; }
+  .auth-brand { top: 26px; left: 24px; }
+  .auth-overlay-content { height: auto; gap: 2px; padding-top: 30px; }
+  .auth-illustration,
+  .login-shell.is-open .auth-illustration { max-height: 150px; transform: none; opacity: 1; margin-bottom: 4px; filter: none; }
+  .auth-illustration svg { max-height: 150px; }
+  .auth-sub { display: none; }
+  .auth-toggle-btn,
+  .auth-back-btn { display: none; }
+  .auth-headline,
+  .login-shell.is-open .auth-headline { font-size: 1.3rem; margin-bottom: 4px; }
+  .auth-state-open { display: none !important; }
+  .auth-state-closed { display: block !important; }
+  .login-card { padding: 0; max-width: 420px; }
 }
 
 @media (max-width: 575.98px) {
-  .login-card { padding: 32px 24px 28px; }
-  .login-aside-mid { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .auth-overlay-inner { padding: 20px 20px 28px; }
+  .auth-illustration { max-height: 110px; }
+  .auth-illustration svg { max-height: 110px; }
 }
 
 /* ---------- Print (admission slip) ---------- */
