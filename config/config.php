@@ -237,6 +237,9 @@ function printFormTemplateOptions() {
         'smu'          => 'Sikkim Manipal University (Transcript/Migration)',
         'vgu'          => 'Vivekananda Global University (Profile Form)',
         'preetiglobal' => 'Dr. Preeti Global University',
+        'lpu_international' => 'Lovely Professional University (International Applicant Form)',
+        'manipal_jaipur'     => 'Manipal University Jaipur (Registration Form UG/PG)',
+        'bosse'              => 'Board of Open Schooling & Skill Education (BOSSE)',
     ];
 }
 

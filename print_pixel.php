@@ -34,7 +34,7 @@ if (($student['form_template'] ?? '') === 'svsu') {
 }
 
 // Only these university layouts have a pixel-accurate recreation
-$pixelForms = ['sgvu', 'amity', 'mangalayatan', 'svsu', 'dypatil', 'smu', 'vgu', 'preetiglobal'];
+$pixelForms = ['sgvu', 'amity', 'mangalayatan', 'svsu', 'dypatil', 'smu', 'vgu', 'preetiglobal', 'lpu_international', 'manipal_jaipur', 'bosse'];
 $folder = in_array($student['form_template'] ?? '', $pixelForms, true) ? $student['form_template'] : null;
 
 if (!$folder) {
