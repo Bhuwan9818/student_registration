@@ -16,6 +16,7 @@ html, body {
     margin: 0;
     padding: 0;
     background: #e9e9e9;
+    overflow-x: hidden;
 }
 
 body {
@@ -28,11 +29,13 @@ body {
 
 .sheet {
     width: 210mm;
+    max-width: 100%;
     min-height: 297mm;
     margin: 6mm auto;
     background: #fff;
     padding: 6mm 7mm;
     border: 1px solid #999;
+    box-sizing: border-box;
 }
 
 @media print {
@@ -63,21 +66,37 @@ body {
 .char-boxes {
     display: flex;
     flex-wrap: nowrap;
+    max-width: 100%;
 }
 .char-box {
     border: 1px solid #000;
     border-left: none;
+    /* Normal, fixed-size boxes everywhere by default — do NOT shrink.
+       Only the address block (a narrower column) opts into shrinking,
+       via the .address-col override below. */
+    flex: 0 0 15px;
     width: 15px;
     height: 18px;
-    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
     font-weight: bold;
     line-height: 1;
+    overflow: hidden;
 }
 .char-box:first-child { border-left: 1px solid #000; }
+
+/* PERMANENT/MAILING ADDRESS columns are narrower than the full sheet
+   width, so their box rows are allowed to shrink (down to 5px) rather
+   than overflow past the column border. Every other field on the form
+   (name, pincode, DOB, etc.) keeps the fixed 15px size above. */
+.address-col .char-box {
+    flex: 1 1 15px;
+    min-width: 5px;
+    max-width: 15px;
+    width: auto;
+}
 
 /* ---------- Tick / checkbox squares ---------- */
 .tick-box {

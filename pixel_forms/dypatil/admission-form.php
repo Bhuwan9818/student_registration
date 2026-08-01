@@ -67,11 +67,30 @@ $dobDay = $dobMonth = $dobYear = '';
 if (!empty($student['dob'])) {
     [$dobYear, $dobMonth, $dobDay] = array_pad(explode('-', $student['dob']), 3, '');
 }
+
+/**
+ * Split one long text field across several fixed-length char-box rows.
+ * e.g. a 45-character address with $perRow=30, $rows=3 renders:
+ *   row1 = first 30 chars, row2 = remaining 15 chars, row3 = empty.
+ * Any text beyond $perRow * $rows characters is truncated (the paper
+ * form has no more physical rows to put it in).
+ */
+function multiRowCharBoxes($text, $perRow, $rows) {
+    $chunks = str_split((string) $text, $perRow);
+    $chunks = array_pad($chunks, $rows, '');
+    $chunks = array_slice($chunks, 0, $rows);
+    $html = '';
+    foreach ($chunks as $chunk) {
+        $html .= charBoxes($chunk, $perRow);
+    }
+    return $html;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Admission Form - DY Patil Deemed to be University</title>
 <link rel="stylesheet" href="../shared/common.css">
 <link rel="stylesheet" href="style.css">
@@ -189,9 +208,7 @@ if (!empty($student['dob'])) {
     <tr>
       <td class="address-col">
         <div class="field-label">PERMANENT<br>ADDRESS:</div>
-        <?= charBoxes($student['address'] ?? '', 30) ?>
-        <?= charBoxes('', 30) ?>
-        <?= charBoxes('', 30) ?>
+        <?= multiRowCharBoxes($student['address'] ?? '', 30, 3) ?>
         <div class="field-row pincode-row">
           <span class="inline-label">PIN CODE</span>
           <?= charBoxes($student['pincode'] ?? '', 8) ?>
@@ -201,11 +218,9 @@ if (!empty($student['dob'])) {
         <div class="underline-row">PH. No. <span class="dotted-fill"><?= v($student['alt_mobile']) ?></span> MOB. No.<span class="dotted-fill"><?= v($student['mobile']) ?></span></div>
         <div class="underline-row">E-MAIL: <span class="dotted-fill"><?= v($student['email']) ?></span></div>
       </td>
-      <td class="address-col">
+      <td class="address-col" style="padding-left: 5px;">
         <div class="field-label">MAILING<br>ADDRESS:</div>
-        <?= charBoxes($student['address'] ?? '', 30) ?>
-        <?= charBoxes('', 30) ?>
-        <?= charBoxes('', 30) ?>
+        <?= multiRowCharBoxes($student['address'] ?? '', 30, 3) ?>
         <div class="field-row pincode-row">
           <span class="inline-label">PIN CODE</span>
           <?= charBoxes($student['pincode'] ?? '', 8) ?>
