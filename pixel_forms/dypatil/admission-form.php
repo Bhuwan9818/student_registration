@@ -111,7 +111,7 @@ function multiRowCharBoxes($text, $perRow, $rows) {
         <div class="uni-sub">DY Patil Deemed to be University Sector 7, Nerul, Navi Mumbai: 400706</div>
       </td>
       <td class="header-right">
-        <img src="assets/dypatil-logo.jpeg" alt="DY Patil Logo" class="uni-logo">
+        <img src="assets/dypatil.jpeg" alt="DY Patil Logo" class="uni-logo">
       </td>
     </tr>
   </table>
