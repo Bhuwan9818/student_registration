@@ -1,0 +1,86 @@
+/* ============================================================
+   VGU (Vivekananda Global University) admission-form.php
+   form-specific styles (loaded after ../shared/common.css)
+   ============================================================ */
+
+.header-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4px;
+    border-bottom: 1.5px solid #000;
+    padding-bottom: 4px;
+}
+.header-table td { border: none; padding: 0; vertical-align: middle; }
+.header-logo-left, .header-logo-right { width: 12%; text-align: center; }
+.header-center { width: 76%; text-align: center; }
+.uni-logo { height: 55px; }
+.uni-establish { font-size: 8.5px; font-style: normal; padding: 0 6px; }
+
+.top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 6px 0;
+}
+.unique-no { font-size: 10px; font-weight: bold; width: 18%; flex-shrink: 0; white-space: nowrap; }
+.dotted-fill.short { display: inline-block; min-width: 60px; border-bottom: 1px dotted #000; }
+.form-title { font-weight: bold; font-size: 16px; text-decoration: underline; text-align: center; flex: 1; white-space: nowrap; }
+.level-row { flex-shrink: 0; text-align: right; font-size: 9px; white-space: nowrap; }
+.level-row .inline-check { margin-right: 4px; white-space: nowrap; }
+
+/* Radio-style circular tick box for UG/PG/NET/M.Phil/Ph.D */
+.circle-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #000;
+    border-radius: 50%;
+    font-size: 8px;
+    margin: 0 3px 0 2px;
+    vertical-align: middle;
+}
+
+.top-grid { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+.top-grid td { border: none; padding: 0; vertical-align: top; }
+.top-grid-fields { width: 78%; padding-right: 10px; }
+.photo-cell { width: 22%; text-align: center; vertical-align: top; }
+
+.field-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+}
+.note-row { margin-top: -3px; margin-bottom: 6px; }
+.field-label {
+    font-weight: bold;
+    font-size: 10px;
+    white-space: nowrap;
+}
+.field-label.wide-label { width: 165px; flex-shrink: 0; }
+.inline-label { margin-left: 6px; }
+.small-note { font-size: 8.5px; margin-right: 4px; }
+
+.dotted-fill {
+    border-bottom: 1px solid #000;
+    flex: 1;
+    min-width: 60px;
+    padding: 0 4px;
+    font-size: 10.5px;
+}
+.dotted-fill.wide { min-width: 200px; }
+.dotted-fill.full-width { flex: 1 1 100%; min-width: 100%; }
+
+.section-note { font-weight: bold; font-size: 10.5px; text-decoration: underline; margin: 8px 0 3px; }
+.section-note-normal { font-weight: normal; text-decoration: none; font-size: 9.5px; }
+
+.qual-table th, .qual-table td,
+.exp-table th, .exp-table td { font-size: 9.5px; text-align: center; height: 22px; }
+
+.salary-row { margin-top: 10px; }
+.date-sign-row { margin-top: 18px; }
+
+.pto-note { text-align: right; font-weight: bold; font-size: 11px; margin-top: 6px; }
