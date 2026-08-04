@@ -1,0 +1,99 @@
+/* ============================================================
+   Dr. Preeti Global University admission-form.php
+   form-specific styles (loaded after ../shared/common.css)
+   ============================================================ */
+
+.preeti-sheet { position: relative; overflow: hidden; }
+
+.watermark {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    width: 260px;
+    height: 349px;
+    transform: translate(-50%, -50%);
+    background: url('assets/preeti-logo.jpeg') center/contain no-repeat;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.header-table, .form-title, .field-row, .documents-title, .documents-grid, .signature-row, .section-line {
+    position: relative;
+    z-index: 1;
+}
+
+.header-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 9px;
+}
+.header-table td { border: none; padding: 0; vertical-align: middle; }
+.header-logo { width: 16%; text-align: center; }
+.uni-logo { height: 83px; }
+.header-center { width: 64%; text-align: center; }
+.uni-name { font-size: 25px; font-weight: 800; color: #b52025; font-family: Georgia, 'Times New Roman', serif; line-height: 1.1; }
+.uni-name-blue { color: #17458f; }
+.uni-sub { font-size: 12.5px; font-weight: 700; margin-top: 7px; }
+.header-photo { width: 20%; text-align: right; }
+.header-photo .photo-box { width: 75px; height: 121px; margin-left: auto; border: 1px solid #000; }
+
+.form-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 18.5px;
+    color: #fff;
+    background: #17458f;
+    padding: 3px 0;
+    margin: 4px 0 8px;
+}
+
+.field-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+}
+.field-label {
+    font-weight: normal;
+    white-space: nowrap;
+}
+.gender-label { margin-left: 23px; }
+.small-note { font-size: 11.5px; margin-right: 6px; }
+
+.dotted-fill {
+    border-bottom: 1px dotted #000;
+    flex: 1;
+    min-width: 70px;
+    padding: 0 4px;
+    font-size: 12.5px;
+}
+.dotted-fill.short { min-width: 40px; flex: 0 0 60px; }
+.dotted-fill.xshort { min-width: 30px; flex: 0 0 45px; }
+.dotted-fill.wide { min-width: 160px; }
+.dotted-fill.full { flex: 1 1 100%; min-width: 100%; }
+
+.inline-check { font-size: 12.5px; margin-right: 19px; white-space: nowrap; }
+
+.section-line { border-top: 1.5px solid #000; margin: 6px 0; }
+
+.documents-title { font-weight: bold; font-size: 13px; text-decoration: underline; margin-bottom: 11px; }
+.documents-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px 10px;
+    font-size: 12px;
+}
+.doc-item { white-space: nowrap; }
+
+.signature-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 36px;
+    font-size: 12.5px;
+    font-weight: bold;
+}
+.signature-col { flex: 1; text-align: center; }
+.signature-col .dotted-fill { display: block; margin-top: 36px; }
