@@ -67,24 +67,6 @@ $dobDay = $dobMonth = $dobYear = '';
 if (!empty($student['dob'])) {
     [$dobYear, $dobMonth, $dobDay] = array_pad(explode('-', $student['dob']), 3, '');
 }
-
-/**
- * Split one long text field across several fixed-length char-box rows.
- * e.g. a 45-character address with $perRow=30, $rows=3 renders:
- *   row1 = first 30 chars, row2 = remaining 15 chars, row3 = empty.
- * Any text beyond $perRow * $rows characters is truncated (the paper
- * form has no more physical rows to put it in).
- */
-function multiRowCharBoxes($text, $perRow, $rows) {
-    $chunks = str_split((string) $text, $perRow);
-    $chunks = array_pad($chunks, $rows, '');
-    $chunks = array_slice($chunks, 0, $rows);
-    $html = '';
-    foreach ($chunks as $chunk) {
-        $html .= charBoxes($chunk, $perRow);
-    }
-    return $html;
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -111,7 +93,7 @@ function multiRowCharBoxes($text, $perRow, $rows) {
         <div class="uni-sub">DY Patil Deemed to be University Sector 7, Nerul, Navi Mumbai: 400706</div>
       </td>
       <td class="header-right">
-        <img src="assets/dypatil.jpeg" alt="DY Patil Logo" class="uni-logo">
+        <img src="assets/dypatil-logo.jpeg" alt="DY Patil Logo" class="uni-logo">
       </td>
     </tr>
   </table>
@@ -208,7 +190,9 @@ function multiRowCharBoxes($text, $perRow, $rows) {
     <tr>
       <td class="address-col">
         <div class="field-label">PERMANENT<br>ADDRESS:</div>
-        <?= multiRowCharBoxes($student['address'] ?? '', 30, 3) ?>
+        <?= charBoxes($student['address'] ?? '', 30) ?>
+        <?= charBoxes('', 30) ?>
+        <?= charBoxes('', 30) ?>
         <div class="field-row pincode-row">
           <span class="inline-label">PIN CODE</span>
           <?= charBoxes($student['pincode'] ?? '', 8) ?>
@@ -218,9 +202,11 @@ function multiRowCharBoxes($text, $perRow, $rows) {
         <div class="underline-row">PH. No. <span class="dotted-fill"><?= v($student['alt_mobile']) ?></span> MOB. No.<span class="dotted-fill"><?= v($student['mobile']) ?></span></div>
         <div class="underline-row">E-MAIL: <span class="dotted-fill"><?= v($student['email']) ?></span></div>
       </td>
-      <td class="address-col" style="padding-left: 5px;">
+      <td class="address-col">
         <div class="field-label">MAILING<br>ADDRESS:</div>
-        <?= multiRowCharBoxes($student['address'] ?? '', 30, 3) ?>
+        <?= charBoxes($student['address'] ?? '', 30) ?>
+        <?= charBoxes('', 30) ?>
+        <?= charBoxes('', 30) ?>
         <div class="field-row pincode-row">
           <span class="inline-label">PIN CODE</span>
           <?= charBoxes($student['pincode'] ?? '', 8) ?>
