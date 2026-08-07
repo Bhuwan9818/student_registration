@@ -1,7 +1,7 @@
 <?php
 // ============================================================
 // Core configuration: DB connection, session, helper functions
-// ============================================================
+// ============================================================ 
 
 // ---- Edit these to match your MySQL setup ----
 define('DB_HOST', 'localhost');
