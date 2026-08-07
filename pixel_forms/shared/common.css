@@ -90,6 +90,19 @@ body {
     overflow: hidden;
 }
 
+.char-box:first-child { border-left: 1px solid #000; }
+
+/* PERMANENT/MAILING ADDRESS columns are narrower than the full sheet
+   width, so their box rows are allowed to shrink (down to 5px) rather
+   than overflow past the column border. Every other field on the form
+   (name, pincode, DOB, etc.) keeps the fixed 15px size above. */
+.address-col .char-box {
+    flex: 1 1 15px;
+    min-width: 5px;
+    max-width: 15px;
+    width: auto;
+}
+
 /* ---------- Tick / checkbox squares ---------- */
 .tick-box {
     display: inline-flex;
