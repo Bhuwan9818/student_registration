@@ -98,8 +98,8 @@ if (!empty($student['dob'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Admission Form - Board of Open Schooling &amp; Skill Education (BOSSE)</title>
-<link rel="stylesheet" href="../shared/common.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../shared/common.css?v=20260807">
+<link rel="stylesheet" href="style.css?v=20260807">
 </head>
 <body>
 
