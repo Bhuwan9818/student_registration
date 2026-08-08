@@ -249,7 +249,7 @@ $exportQs['export'] = 'csv';
               <a href="student_detail.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
               <a href="edit_student.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-pen"></i></a>
               <!-- <a href="print_slip.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fa-solid fa-print"></i></a> -->
-              <?php if (in_array($s['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu', 'dypatil', 'smu', 'vgu', 'preetiglobal', 'lpu_international', 'manipal_jaipur', 'bosse'], true)): ?>
+              <?php if (in_array($s['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu', 'dypatil', 'smu', 'vgu', 'preetiglobal', 'lpu_international', 'manipal_jaipur', 'bosse', 'chandigarh'], true)): ?>
                 <a href="print_pixel.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fa-solid fa-file-lines"></i></a>
               <?php endif; ?>
               <button type="submit" name="delete_id" value="<?= $s['id'] ?>" formnovalidate class="btn btn-sm btn-outline-danger" onclick="return confirm('Permanently delete this registration? This cannot be undone.');"><i class="fa-solid fa-trash"></i></button>
