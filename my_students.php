@@ -84,6 +84,9 @@ require_once __DIR__ . '/includes/header.php';
           <td><?= date('d M Y', strtotime($s['created_at'])) ?></td>
           <td>
             <a href="student_detail.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
+            <?php if ($s['status'] === 'submitted'): ?>
+              <a href="edit_student.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i></a>
+            <?php endif; ?>
             <?php if (in_array($s['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu', 'dypatil', 'smu', 'vgu', 'preetiglobal'], true)): ?>
                 <a href="print_pixel.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fa-solid fa-file-lines"></i></a>
               <?php endif; ?>

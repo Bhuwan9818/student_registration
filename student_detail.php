@@ -87,12 +87,14 @@ require_once __DIR__ . '/includes/header.php';
   </div>
   <div class="d-flex gap-2">
     <!-- <a href="print_slip.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Print Slip</a> -->
-    <?php if (in_array($student['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu', 'dypatil', 'smu', 'vgu', 'preetiglobal', 'lpu_international', 'manipal_jaipur', 'bosse'], true)): ?>
+    <?php if (in_array($student['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu'], true)): ?>
       <a href="print_pixel.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-file-lines"></i> Print </a>
     <?php endif; ?>
     <?php if (isAdmin()): ?>
       <a href="edit_student.php?id=<?= $student['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i> Edit</a>
       <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa-solid fa-trash"></i> Delete</button>
+    <?php elseif ($student['created_by'] == $_SESSION['user_id'] && $student['status'] === 'submitted'): ?>
+      <a href="edit_student.php?id=<?= $student['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen"></i> Edit</a>
     <?php endif; ?>
     <a href="<?= isAdmin() ? 'admin_students.php' : 'my_students.php' ?>" class="btn btn-sm btn-outline-secondary">
       <i class="fa-solid fa-arrow-left"></i> Back

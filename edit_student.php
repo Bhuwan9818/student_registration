@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/config/config.php';
-requireAdmin();
-
+requireLogin();
 
 $id = (int)($_GET['id'] ?? 0);
 $stmt = $pdo->prepare("SELECT s.*, un.name as university_name FROM students s
@@ -12,7 +11,18 @@ $student = $stmt->fetch();
 
 if (!$student) {
     flash('error', 'Registration not found.');
-    redirect('admin_students.php');
+    redirect(isAdmin() ? 'admin_students.php' : 'my_students.php');
+}
+
+// Centers may only edit their own submissions, and only while still awaiting review
+$isOwner = !isAdmin() && $student['created_by'] == $_SESSION['user_id'];
+if (!isAdmin() && !$isOwner) {
+    flash('error', 'You do not have permission to edit this record.');
+    redirect('my_students.php');
+}
+if ($isOwner && $student['status'] !== 'submitted') {
+    flash('error', 'This registration has already been reviewed and can no longer be edited. Contact admin for changes.');
+    redirect('student_detail.php?id=' . $id);
 }
 
 $academicLevels = academicLevelLabels();
@@ -25,8 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $photoPath = handleUpload('photo', 'photos', ['jpg','jpeg','png']);
 
+    $adminFieldsSql = isAdmin() ? "enrollment_no = ?, status = ?," : "";
     $sql = "UPDATE students SET
-                enrollment_no = ?, status = ?,
+                $adminFieldsSql
                 first_name = ?, last_name = ?, father_name = ?, mother_name = ?, dob = ?, gender = ?, category = ?,
                 employment_status = ?, marital_status = ?, religion = ?, nationality = ?, aadhar_no = ?, abc_id = ?, deb_id = ?,
                 mobile = ?, alt_mobile = ?, email = ?, alt_email = ?, address = ?, city = ?, district = ?, state = ?, pincode = ?, guardian_mobile = ?,
@@ -34,13 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 " . ($photoPath ? ", photo_path = ?" : "") . "
             WHERE id = ?";
 
-    $params = [
-        trim($_POST['enrollment_no']) ?: null, $_POST['status'],
+    $params = [];
+    if (isAdmin()) {
+        $params[] = trim($_POST['enrollment_no']) ?: null;
+        $params[] = $_POST['status'];
+    }
+    array_push($params,
         $firstName, $lastName, trim($_POST['father_name']), trim($_POST['mother_name']), $_POST['dob'] ?: null, $_POST['gender'], $_POST['category'],
         $_POST['employment_status'], $_POST['marital_status'], $_POST['religion'], trim($_POST['nationality']), trim($_POST['aadhar_no']), trim($_POST['abc_id']), trim($_POST['deb_id']),
         trim($_POST['mobile']), trim($_POST['alt_mobile']), trim($_POST['email']), trim($_POST['alt_email']), trim($_POST['address']), trim($_POST['city']), trim($_POST['district']), trim($_POST['state']), trim($_POST['pincode']), trim($_POST['guardian_mobile']),
         $_POST['course_id'], trim($_POST['specialization']), $_POST['session_id'], (int)$_POST['semester_no']
-    ];
+    );
     if ($photoPath) { $params[] = $photoPath; }
     $params[] = $id;
 
@@ -72,7 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    logActivity($pdo, $_SESSION['user_id'], 'registration', 'Edited registration for ' . $firstName . ' ' . $lastName, $id);
+    $editorNote = isAdmin() ? 'Edited registration for ' : 'Center edited own registration for ';
+    logActivity($pdo, $_SESSION['user_id'], 'registration', $editorNote . $firstName . ' ' . $lastName, $id);
     flash('success', 'Registration updated successfully.');
     redirect('student_detail.php?id=' . $id);
 }
@@ -99,14 +115,21 @@ require_once __DIR__ . '/includes/header.php';
   <a href="student_detail.php?id=<?= $id ?>" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-arrow-left"></i> Back to Registration</a>
 </div>
 
+<?php if ($isOwner): ?>
+<div class="alert alert-warning small mb-3">
+  <i class="fa-solid fa-circle-info"></i> You can edit this submission while it is still <strong>Submitted</strong> and awaiting review. Once admin approves or rejects it, editing is locked.
+</div>
+<?php endif; ?>
+
 <form method="POST" enctype="multipart/form-data">
   <div class="table-card p-4 mb-3">
-    <div class="section-title mb-3">Admin Only</div>
+    <div class="section-title mb-3"><?= isAdmin() ? 'Admin Only' : 'Registration Info' ?></div>
     <div class="row g-3">
       <div class="col-md-4">
         <label class="form-label">Registration No.</label>
         <input type="text" class="form-control mono" value="<?= e($student['registration_no']) ?>" disabled>
       </div>
+      <?php if (isAdmin()): ?>
       <div class="col-md-4">
         <label class="form-label">Enrollment Number <small class="text-muted">(assign once processed)</small></label>
         <input type="text" name="enrollment_no" class="form-control" value="<?= e($student['enrollment_no']) ?>" placeholder="e.g. VSA2026001234">
@@ -119,6 +142,12 @@ require_once __DIR__ . '/includes/header.php';
           <option value="rejected" <?= $student['status'] == 'rejected' ? 'selected' : '' ?>>Rejected</option>
         </select>
       </div>
+      <?php else: ?>
+      <div class="col-md-4">
+        <label class="form-label">Status</label>
+        <input type="text" class="form-control" value="<?= e(ucfirst($student['status'])) ?>" disabled>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 
