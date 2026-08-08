@@ -221,9 +221,7 @@ $candidateName = trim(($student['first_name'] ?? '') . ' ' . ($student['last_nam
     <tr>
       <td class="address-col">
         <div class="field-label">PERMANENT<br>ADDRESS:</div>
-        <?= charBoxes($student['address'] ?? '', 30) ?>
-        <?= charBoxes('', 30) ?>
-        <?= charBoxes('', 30) ?>
+        <?= charBoxes($student['address'] ?? '', 100) ?>
         <div class="field-row pincode-row">
           <span class="inline-label">PIN CODE</span>
           <?= charBoxes($student['pincode'] ?? '', 8) ?>
@@ -235,9 +233,7 @@ $candidateName = trim(($student['first_name'] ?? '') . ' ' . ($student['last_nam
       </td>
       <td class="address-col">
         <div class="field-label">MAILING<br>ADDRESS:</div>
-        <?= charBoxes($student['address'] ?? '', 30) ?>
-        <?= charBoxes('', 30) ?>
-        <?= charBoxes('', 30) ?>
+        <?= charBoxes($student['address'] ?? '', 100) ?>
         <div class="field-row pincode-row">
           <span class="inline-label">PIN CODE</span>
           <?= charBoxes($student['pincode'] ?? '', 8) ?>
