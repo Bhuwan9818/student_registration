@@ -87,7 +87,7 @@ require_once __DIR__ . '/includes/header.php';
   </div>
   <div class="d-flex gap-2">
     <!-- <a href="print_slip.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-print"></i> Print Slip</a> -->
-    <?php if (in_array($student['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu'], true)): ?>
+    <?php if (in_array($student['form_template'] ?? '', ['sgvu', 'amity', 'mangalayatan', 'svsu', 'dypatil', 'smu', 'vgu', 'preetiglobal', 'lpu_international', 'manipal_jaipur', 'bosse', 'chandigarh'], true)): ?>
       <a href="print_pixel.php?id=<?= $student['id'] ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-file-lines"></i> Print </a>
     <?php endif; ?>
     <?php if (isAdmin()): ?>
