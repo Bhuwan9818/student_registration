@@ -93,12 +93,12 @@ $documents = $documents ?? array_map(fn($name) => ['name' => $name, 'submitted' 
   <!-- ================= HEADER ================= -->
   <table class="header-table">
     <tr>
-      <td class="header-logo"><img src="assets/manipal-jaipur-logo.jpeg" alt="Manipal University Jaipur Logo" class="uni-logo"></td>
-      <td class="header-name">
+      <td class="header-logo"><img src="assets/manipal-logo.png" alt="Manipal University Jaipur Logo" class="uni-logo"></td>
+      <!-- <td class="header-name">
         <div class="uni-name">MANIPAL UNIVERSITY</div>
         <div class="uni-name-sub">JAIPUR</div>
         <div class="uni-establish">(University under Section 2(f) of the UGC Act)</div>
-      </td>
+      </td> -->
     </tr>
   </table>
 
