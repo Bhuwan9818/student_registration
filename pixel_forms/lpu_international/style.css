@@ -1,0 +1,132 @@
+/* ============================================================
+   LPU (Lovely Professional University) admission-form.php
+   form-specific styles (loaded after ../shared/common.css)
+   ============================================================ */
+
+.lpu-sheet { border: 2px solid #333; }
+
+.header-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+.header-table td { border: none; padding: 0; vertical-align: top; }
+.header-logo { width: 45%; padding: 4px 0; }
+.uni-logo { height: 72px; }
+.uni-tagline { font-size: 10.5px; font-style: italic; margin-top: 7px; }
+
+.header-title-col { width: 55%; text-align: right; }
+.app-no { font-size: 11.5px; margin-bottom: 7px; }
+.dotted-fill.short { display: inline-block; min-width: 100px; border-bottom: 1px dotted #000; margin-left: 7px; }
+.form-title { font-weight: 900; font-size: 23px; line-height: 1.15; letter-spacing: 0.3px; }
+.form-subtitle { font-weight: 700; font-size: 15px; margin-top: 5px; }
+
+.section-banner {
+    background: #1a1a1a;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    padding: 4px 0;
+    margin: 8px 0 6px;
+}
+
+.top-grid { width: 100%; border-collapse: collapse; }
+.top-grid td { border: none; padding: 0; vertical-align: top; }
+.top-grid-fields { width: 76%; padding-right: 10px; }
+.photo-cell { width: 24%; text-align: center; }
+.photo-note { font-size: 8.5px; margin-top: 7px; line-height: 1.2; }
+
+.numbered-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+}
+.num { font-weight: bold; }
+.field-label { font-weight: normal; white-space: nowrap; }
+.field-label.underline-label { text-decoration: underline; font-weight: bold; }
+.inline-label { font-size: 11.5px; white-space: nowrap; margin-left: 7px; }
+.inline-label.narrow-label { width: 100px; flex-shrink: 0; margin-left: 0; }
+
+.dotted-fill {
+    border-bottom: 1px dotted #000;
+    flex: 1;
+    min-width: 60px;
+    padding: 0 4px;
+    font-size: 12px;
+}
+
+.applicant-detail-note { font-weight: bold; font-size: 12.5px; margin-bottom: 7px; }
+.applicant-detail-note .normal-weight { font-weight: normal; font-size: 11px; }
+
+.underline-field {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 17px;
+}
+.underline-field .field-label { font-weight: bold; font-size: 11.5px; white-space: nowrap; }
+.underline-field.small-field { margin-top: 10px; margin-bottom: 10px; }
+.underline-fill {
+    border-bottom: 1.5px solid #000;
+    flex: 1;
+    min-width: 60px;
+    padding: 0 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+.underline-fill.full-line { display: block; margin-bottom: 14px; }
+
+.dob-gender-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+.dob-block { display: flex; align-items: flex-end; gap: 10px; }
+.dob-block .field-label { font-weight: bold; font-size: 11.5px; margin-bottom: 7px; }
+.dob-boxes { display: flex; gap: 10px; }
+.dob-group { text-align: center; }
+.dob-caption { font-size: 9px; margin-bottom: 5px; }
+.dob-group .char-boxes { width: auto; }
+.dob-group .char-box, .phone-group .char-box { max-width: 18px; }
+
+.gender-block { display: flex; align-items: center; gap: 4px; }
+.gender-block .field-label { font-weight: bold; font-size: 11.5px; }
+.inline-check { font-size: 11.5px; margin-right: 17px; white-space: nowrap; }
+
+.contact-box { border: 1px solid #000; padding: 11px 14px; margin-bottom: 10px; }
+.box-heading { font-weight: bold; font-size: 12px; text-decoration: underline; margin: 8px 0 5px; }
+.box-heading:first-child { margin-top: 0; }
+
+.field-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+}
+.phone-group { display: flex; flex-direction: column; }
+.phone-group.grow { flex: 1; min-width: 140px; }
+
+.residential-table { width: 100%; border-collapse: collapse; margin-bottom: 17px; }
+.residential-table td.res-col { border: 1px solid #000; padding: 8px 11px; vertical-align: top; width: 33.33%; }
+.res-title { font-weight: bold; font-size: 11.5px; margin-bottom: 8px; }
+.res-row { font-size: 11px; margin-bottom: 8px; white-space: nowrap; }
+.meal-col .res-title:nth-of-type(2) { margin-top: 14px; }
+
+.signature-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 34px;
+}
+.signature-col { width: 45%; }
+.signature-line { font-size: 18.5px; margin-bottom: 5px; }
+.signature-caption { font-size: 10.5px; border-top: 1px solid #000; padding-top: 3px; }
