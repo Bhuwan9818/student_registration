@@ -82,8 +82,8 @@ $candidateName = trim(($student['first_name'] ?? '') . ' ' . ($student['last_nam
   <table class="header-table">
     <tr>
       <td class="header-logo">
-        <img src="assets/lpu-logo.jpeg" alt="LPU Logo" class="uni-logo">
-        <div class="uni-tagline">Transforming Education Transforming India</div>
+        <img src="assets/logo-lpu.png" alt="LPU Logo" class="uni-logo">
+        <!-- <div class="uni-tagline">Transforming Education Transforming India</div> -->
       </td>
       <td class="header-title-col">
         <div class="app-no">Application No.<span class="dotted-fill short"><?= v($student['application_no'] ?? '') ?></span></div>

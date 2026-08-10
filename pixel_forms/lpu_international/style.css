@@ -12,7 +12,7 @@
 }
 .header-table td { border: none; padding: 0; vertical-align: top; }
 .header-logo { width: 45%; padding: 4px 0; }
-.uni-logo { height: 72px; }
+.uni-logo { height: 92px !important; }
 .uni-tagline { font-size: 10.5px; font-style: italic; margin-top: 7px; }
 
 .header-title-col { width: 55%; text-align: right; }
