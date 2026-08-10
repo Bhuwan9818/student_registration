@@ -74,11 +74,12 @@ $candidateName = trim(($student['first_name'] ?? '') . ' ' . ($student['last_nam
   <!-- ================= HEADER ================= -->
   <table class="header-table">
     <tr>
-      <td class="header-logo"><img src="assets/smu-logo.jpeg" alt="SMU Logo" class="uni-logo"></td>
-      <td class="header-name">
+      <td class="header-logo"><img src="assets/smu-logo.jpeg" alt="SMU Logo" class="uni-logo">
+        <div>
         <div class="uni-name">SMU</div>
-        <div class="uni-sub-name">SIKKIM<br>MANIPAL<br>UNIVERSITY</div>
+        <div class="uni-sub-name">SIKKIM MANIPAL UNIVERSITY</div>
         <div class="uni-directorate">DIRECTORATE OF DISTANCE EDUCATION</div>
+      </div>
       </td>
       <td class="header-title">Application for Transcript / Bonafide cum Migration Certificate</td>
     </tr>

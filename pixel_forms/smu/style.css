@@ -9,7 +9,7 @@
     margin-bottom: 14px;
 }
 .header-table td { border: none; padding: 0; vertical-align: top; }
-.header-logo { width: 60px; }
+.header-logo { display: flex !important; gap: 10px !important;}
 .uni-logo { height: 60px; }
 
 .header-name { width: 30%; padding-left: 6px; }
@@ -35,7 +35,6 @@
     font-size: 10.5px;
     font-style: italic;
 }
-.address-line { }
 
 .triple-row-table, .pair-row-table { margin-top: 0; }
 .triple-row-table .label-cell { width: 12%; }
