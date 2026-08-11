@@ -68,6 +68,118 @@ require_once __DIR__ . '/includes/header.php';
   <a href="center_detail.php?id=<?= $subcenter['center_id'] ?>"><strong><?= e($subcenter['center_name']) ?></strong></a>
 </div>
 
+<div class="table-card p-3 mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="section-title mb-0">Account Details</div>
+    <div class="d-flex gap-1">
+      <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#resetModal">Reset Password</button>
+      <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editModal">Edit Details</button>
+    </div>
+  </div>
+  <div class="row small g-2">
+    <div class="col-md-3"><strong>Username:</strong> <?= e($subcenter['username']) ?></div>
+    <div class="col-md-3">
+      <strong>Password:</strong>
+      <?php if ($subcenter['plain_password']): ?>
+        <span id="pwdMask" class="mono">••••••••</span>
+        <span id="pwdReal" class="mono d-none"><?= e($subcenter['plain_password']) ?></span>
+        <button type="button" class="btn btn-sm btn-link p-0 ms-1" onclick="togglePwd()"><i class="fa-solid fa-eye" id="pwdIcon"></i></button>
+      <?php else: ?>
+        <span class="text-muted">not available — reset to view</span>
+      <?php endif; ?>
+    </div>
+    <div class="col-md-3"><strong>Email:</strong> <?= e($subcenter['email'] ?: '-') ?></div>
+    <div class="col-md-3"><strong>Aadhar No.:</strong> <?= e($subcenter['aadhar_no'] ?: '-') ?></div>
+    <div class="col-md-6"><strong>Address:</strong> <?= e($subcenter['address'] ?: '-') ?></div>
+    <div class="col-md-2"><strong>City:</strong> <?= e($subcenter['city'] ?: '-') ?></div>
+    <div class="col-md-2"><strong>State:</strong> <?= e($subcenter['state'] ?: '-') ?></div>
+    <div class="col-md-2"><strong>Pincode:</strong> <?= e($subcenter['pincode'] ?: '-') ?></div>
+  </div>
+</div>
+
+<!-- Reset password modal -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="admin_subcenters.php">
+        <div class="modal-header">
+          <h6 class="modal-title">Reset Password - <?= e($subcenter['full_name']) ?></h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="user_id" value="<?= $subcenter['id'] ?>">
+          <input type="hidden" name="redirect_to" value="subcenter_detail.php?id=<?= $subcenter['id'] ?>">
+          <label class="form-label">New Password</label>
+          <input type="password" name="new_password" class="form-control" minlength="6" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="reset_password" value="1" class="btn btn-primary btn-sm">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit details modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="admin_subcenters.php">
+        <div class="modal-header">
+          <h6 class="modal-title">Edit Details - <?= e($subcenter['full_name']) ?></h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="user_id" value="<?= $subcenter['id'] ?>">
+          <input type="hidden" name="redirect_to" value="subcenter_detail.php?id=<?= $subcenter['id'] ?>">
+          <div class="mb-2">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="<?= e($subcenter['email']) ?>">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Aadhar Card No. <small class="text-muted">(optional)</small></label>
+            <input type="text" name="aadhar_no" class="form-control" value="<?= e($subcenter['aadhar_no']) ?>">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Address <small class="text-muted">(optional)</small></label>
+            <input type="text" name="address" class="form-control" value="<?= e($subcenter['address']) ?>">
+          </div>
+          <div class="row g-2">
+            <div class="col-md-4 mb-2">
+              <label class="form-label">City</label>
+              <input type="text" name="city" class="form-control" value="<?= e($subcenter['city']) ?>">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">State</label>
+              <input type="text" name="state" class="form-control" value="<?= e($subcenter['state']) ?>">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Pincode</label>
+              <input type="text" name="pincode" class="form-control" value="<?= e($subcenter['pincode']) ?>">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="edit_details" value="1" class="btn btn-primary btn-sm">Save Details</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePwd() {
+  const mask = document.getElementById('pwdMask');
+  const real = document.getElementById('pwdReal');
+  const icon = document.getElementById('pwdIcon');
+  const showing = !real.classList.contains('d-none');
+  mask.classList.toggle('d-none', !showing);
+  real.classList.toggle('d-none', showing);
+  icon.classList.toggle('fa-eye', showing);
+  icon.classList.toggle('fa-eye-slash', !showing);
+}
+</script>
+
 <div class="row g-3 mb-4">
   <div class="col-6 col-md-4">
     <div class="stat-card">
