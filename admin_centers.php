@@ -10,6 +10,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_user'])) {
     $username = trim($_POST['username']);
     $email    = trim($_POST['email']);
     $password = $_POST['password'];
+    $aadhar   = trim($_POST['aadhar_no'] ?? '');
+    $address  = trim($_POST['address'] ?? '');
+    $city     = trim($_POST['city'] ?? '');
+    $state    = trim($_POST['state'] ?? '');
+    $pincode  = trim($_POST['pincode'] ?? '');
 
     $check = $pdo->prepare("SELECT id FROM users WHERE username = ?");
     $check->execute([$username]);
@@ -20,8 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_user'])) {
         flash('error', 'Password must be at least 6 characters.');
     } else {
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $ins = $pdo->prepare("INSERT INTO users (full_name, username, email, password, role, parent_user_id) VALUES (?, ?, ?, ?, 'staff', NULL)");
-        $ins->execute([$fullName, $username, $email, $hash]);
+        $ins = $pdo->prepare("INSERT INTO users (full_name, username, email, password, plain_password, role, parent_user_id, aadhar_no, address, city, state, pincode)
+                               VALUES (?, ?, ?, ?, ?, 'staff', NULL, ?, ?, ?, ?, ?)");
+        $ins->execute([$fullName, $username, $email, $hash, $password, $aadhar ?: null, $address ?: null, $city ?: null, $state ?: null, $pincode ?: null]);
         logActivity($pdo, $_SESSION['user_id'], 'staff_create', 'New center account created: ' . $fullName);
         flash('success', 'Center account created successfully.');
     }
@@ -45,11 +51,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
         flash('error', 'Password must be at least 6 characters.');
     } else {
         $hash = password_hash($newPass, PASSWORD_DEFAULT);
-        $upd = $pdo->prepare("UPDATE users SET password = ? WHERE id = ? AND role = 'staff' AND parent_user_id IS NULL");
-        $upd->execute([$hash, $uid]);
+        $upd = $pdo->prepare("UPDATE users SET password = ?, plain_password = ? WHERE id = ? AND role = 'staff' AND parent_user_id IS NULL");
+        $upd->execute([$hash, $newPass, $uid]);
         flash('success', 'Password reset successfully.');
     }
-    redirect('admin_centers.php');
+    redirect($_POST['redirect_to'] ?? 'admin_centers.php');
+}
+
+// Edit optional details (KYC / address) — does not touch login credentials
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_details'])) {
+    $uid = (int)$_POST['user_id'];
+    $upd = $pdo->prepare("UPDATE users SET email = ?, aadhar_no = ?, address = ?, city = ?, state = ?, pincode = ?
+                           WHERE id = ? AND role = 'staff' AND parent_user_id IS NULL");
+    $upd->execute([
+        trim($_POST['email']) ?: null, trim($_POST['aadhar_no']) ?: null, trim($_POST['address']) ?: null,
+        trim($_POST['city']) ?: null, trim($_POST['state']) ?: null, trim($_POST['pincode']) ?: null, $uid
+    ]);
+    flash('success', 'Center details updated.');
+    redirect($_POST['redirect_to'] ?? 'admin_centers.php');
 }
 
 $centers = $pdo->query("SELECT u.*,
@@ -76,7 +95,7 @@ require_once __DIR__ . '/includes/header.php';
   <div class="table-responsive">
     <table class="table table-sm table-ledger align-middle">
       <thead class="table-light">
-        <tr><th>Name</th><th>Username</th><th>Email</th><th>Registrations</th><th>Online Fees</th><th>Offline Fees</th><th>Sub-Centers</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
+        <tr><th>Name</th><th>Username</th><th>Password</th><th>Email</th><th>Registrations</th><th>Online Fees</th><th>Offline Fees</th><th>Sub-Centers</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
       </thead>
       <tbody>
         <?php foreach ($centers as $s): ?>
@@ -84,6 +103,15 @@ require_once __DIR__ . '/includes/header.php';
         <tr>
           <td><a href="center_detail.php?id=<?= $s['id'] ?>"><?= e($s['full_name']) ?></a></td>
           <td><?= e($s['username']) ?></td>
+          <td>
+            <?php if ($s['plain_password']): ?>
+              <span id="pwdMask<?= $s['id'] ?>" class="mono">••••••••</span>
+              <span id="pwdReal<?= $s['id'] ?>" class="mono d-none"><?= e($s['plain_password']) ?></span>
+              <button type="button" class="btn btn-sm btn-link p-0 ms-1" onclick="togglePwd(<?= $s['id'] ?>)"><i class="fa-solid fa-eye" id="pwdIcon<?= $s['id'] ?>"></i></button>
+            <?php else: ?>
+              <span class="text-muted small">reset to view</span>
+            <?php endif; ?>
+          </td>
           <td><?= e($s['email']) ?></td>
           <td><?= $s['total_forms'] ?></td>
           <td>₹<?= number_format($feeTotals['online_total'], 2) ?></td>
@@ -106,6 +134,7 @@ require_once __DIR__ . '/includes/header.php';
               </button>
             </form>
             <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#resetModal<?= $s['id'] ?>">Reset Pwd</button>
+            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editModal<?= $s['id'] ?>">Edit Details</button>
           </td>
         </tr>
 
@@ -130,9 +159,55 @@ require_once __DIR__ . '/includes/header.php';
             </div>
           </div>
         </div>
+
+        <!-- Edit details modal (optional KYC / address fields) -->
+        <div class="modal fade" id="editModal<?= $s['id'] ?>" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form method="POST">
+                <div class="modal-header">
+                  <h6 class="modal-title">Edit Details - <?= e($s['full_name']) ?></h6>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <input type="hidden" name="user_id" value="<?= $s['id'] ?>">
+                  <div class="mb-2">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="<?= e($s['email']) ?>">
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Aadhar Card No. <small class="text-muted">(optional)</small></label>
+                    <input type="text" name="aadhar_no" class="form-control" value="<?= e($s['aadhar_no']) ?>">
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Address <small class="text-muted">(optional)</small></label>
+                    <input type="text" name="address" class="form-control" value="<?= e($s['address']) ?>">
+                  </div>
+                  <div class="row g-2">
+                    <div class="col-md-4 mb-2">
+                      <label class="form-label">City</label>
+                      <input type="text" name="city" class="form-control" value="<?= e($s['city']) ?>">
+                    </div>
+                    <div class="col-md-4 mb-2">
+                      <label class="form-label">State</label>
+                      <input type="text" name="state" class="form-control" value="<?= e($s['state']) ?>">
+                    </div>
+                    <div class="col-md-4 mb-2">
+                      <label class="form-label">Pincode</label>
+                      <input type="text" name="pincode" class="form-control" value="<?= e($s['pincode']) ?>">
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" name="edit_details" value="1" class="btn btn-primary btn-sm">Save Details</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
         <?php endforeach; ?>
         <?php if (!$centers): ?>
-          <tr><td colspan="10" class="text-center text-muted py-4">No center accounts yet.</td></tr>
+          <tr><td colspan="11" class="text-center text-muted py-4">No center accounts yet.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -165,6 +240,30 @@ require_once __DIR__ . '/includes/header.php';
             <label class="form-label">Password</label>
             <input type="password" name="password" class="form-control" minlength="6" required>
           </div>
+          <hr>
+          <p class="text-muted small mb-2">The fields below are optional and can be filled in later from Edit Details.</p>
+          <div class="mb-2">
+            <label class="form-label">Aadhar Card No. <small class="text-muted">(optional)</small></label>
+            <input type="text" name="aadhar_no" class="form-control">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Address <small class="text-muted">(optional)</small></label>
+            <input type="text" name="address" class="form-control">
+          </div>
+          <div class="row g-2">
+            <div class="col-md-4 mb-2">
+              <label class="form-label">City</label>
+              <input type="text" name="city" class="form-control">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">State</label>
+              <input type="text" name="state" class="form-control">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Pincode</label>
+              <input type="text" name="pincode" class="form-control">
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="submit" name="create_user" value="1" class="btn btn-primary btn-sm">Create Account</button>
@@ -173,5 +272,18 @@ require_once __DIR__ . '/includes/header.php';
     </div>
   </div>
 </div>
+
+<script>
+function togglePwd(id) {
+  const mask = document.getElementById('pwdMask' + id);
+  const real = document.getElementById('pwdReal' + id);
+  const icon = document.getElementById('pwdIcon' + id);
+  const showing = !real.classList.contains('d-none');
+  mask.classList.toggle('d-none', !showing);
+  real.classList.toggle('d-none', showing);
+  icon.classList.toggle('fa-eye', showing);
+  icon.classList.toggle('fa-eye-slash', !showing);
+}
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
