@@ -241,6 +241,7 @@ function printFormTemplateOptions() {
         'manipal_jaipur'     => 'Manipal University Jaipur (Registration Form UG/PG)',
         'bosse'              => 'Board of Open Schooling & Skill Education (BOSSE)',
         'chandigarh'         => 'Chandigarh University',
+        'sabarmati' => 'Sabarmati University',
     ];
 }
 
