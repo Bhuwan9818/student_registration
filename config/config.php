@@ -1,16 +1,16 @@
 <?php
 // ============================================================
 // Core configuration: DB connection, session, helper functions
-// ============================================================ 
+// ============================================================
 
 // ---- Edit these to match your MySQL setup ----
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'admission_portal');
-define('DB_USER', 'root');
-define('DB_PASS', 'root');
+define('DB_NAME', 'u677586028_admission_db');
+define('DB_USER', 'u677586028_vsacademy');
+define('DB_PASS', 'Bhuwan.9818');
 // -----------------------------------------------
 
-define('BASE_URL', '/student_registration'); // e.g. '/admission-portal' if hosted in a subfolder
+define('BASE_URL', ''); // e.g. '/admission-portal' if hosted in a subfolder
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -233,15 +233,6 @@ function printFormTemplateOptions() {
         'amity'        => 'Amity University',
         'mangalayatan' => 'Mangalayatan University',
         'svsu'         => 'Swami Vivekanand Subharti University',
-        'dypatil'      => 'DY Patil Deemed to be University',
-        'smu'          => 'Sikkim Manipal University (Transcript/Migration)',
-        'vgu'          => 'Vivekananda Global University (Profile Form)',
-        'preetiglobal' => 'Dr. Preeti Global University',
-        'lpu_international' => 'Lovely Professional University (International Applicant Form)',
-        'manipal_jaipur'     => 'Manipal University Jaipur (Registration Form UG/PG)',
-        'bosse'              => 'Board of Open Schooling & Skill Education (BOSSE)',
-        'chandigarh'         => 'Chandigarh University',
-        'sabarmati' => 'Sabarmati University',
     ];
 }
 
