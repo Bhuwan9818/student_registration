@@ -233,6 +233,16 @@ function printFormTemplateOptions() {
         'amity'        => 'Amity University',
         'mangalayatan' => 'Mangalayatan University',
         'svsu'         => 'Swami Vivekanand Subharti University',
+        'dypatil'      => 'DY Patil Deemed to be University',
+        'smu'          => 'Sikkim Manipal University (Transcript/Migration)',
+        'vgu'          => 'Vivekananda Global University (Profile Form)',
+        'preetiglobal' => 'Dr. Preeti Global University',
+        'lpu_international' => 'Lovely Professional University (International Applicant Form)',
+        'manipal_jaipur'     => 'Manipal University Jaipur (Registration Form UG/PG)',
+        'bosse'              => 'Board of Open Schooling & Skill Education (BOSSE)',
+        'chandigarh'         => 'Chandigarh University',
+        'sabarmati'          => 'Sabarmati University',
+        'gla'                => 'GLA University, Mathura',
     ];
 }
 
