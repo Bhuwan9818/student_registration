@@ -1,0 +1,101 @@
+/* ============================================================
+   GLA University admission-form.php — form-specific styles
+   (loaded after ../shared/common.css)
+   ============================================================ */
+
+.sheet { border-top: 5px solid #1c5c1c; }
+
+.header-logo-wrap {
+    width: 100%;
+    text-align: center;
+    padding: 4px 0 6px;
+}
+.uni-logo-full {
+    height: 74px;
+    max-width: 100%;
+}
+
+.uni-sub { font-size: 10.5px; margin-top: 5px; }
+.uni-sub.center { text-align: center; margin-bottom: 6px; }
+
+.form-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 17px;
+    color: #1c5c1c;
+    border-top: 1.5px solid #1c5c1c;
+    border-bottom: 1.5px solid #1c5c1c;
+    padding: 3px 0;
+    margin: 4px 0 6px;
+}
+
+.instructions { font-size: 11px; margin-bottom: 10px; }
+
+.top-grid { width: 100%; border-collapse: collapse; margin-bottom: 7px; }
+.top-grid td { border: none; padding: 0; vertical-align: top; }
+.top-grid-fields { width: 78%; padding-right: 8px; }
+.photo-cell { width: 22%; text-align: center; }
+.photo-note { font-size: 8.5px; margin: 3px 0; line-height: 1.2; }
+
+.field-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 7px;
+    flex-wrap: wrap;
+}
+.field-label {
+    font-weight: bold;
+    font-size: 11.5px;
+    white-space: nowrap;
+}
+.field-label.two-line { line-height: 1.1; }
+.field-label.wide-label { width: 110px; flex-shrink: 0; }
+.field-label.debarred-label { white-space: normal; }
+.inline-label { margin-left: 10px; }
+
+.dotted-fill {
+    border-bottom: 1px dotted #000;
+    flex: 1;
+    min-width: 80px;
+    padding: 0 4px;
+    font-size: 12px;
+}
+.dotted-fill.wide { min-width: 300px; }
+.dotted-fill.year-fill { min-width: 50px; flex: 0 0 60px; }
+
+.fee-plan-row { margin-top: 10px; }
+
+.secondary-note { font-size: 10.5px; font-style: italic; margin: 4px 0; }
+.secondary-note.center { text-align: center; }
+.secondary-note.bordered {
+    border-top: 1.5px solid #000;
+    border-bottom: 1.5px solid #000;
+    padding: 3px 0;
+    margin: 6px 0;
+    font-style: normal;
+}
+
+.gender-row .field-label { margin-right: 5px; }
+.inline-check { font-size: 11.5px; margin-right: 17px; white-space: nowrap; }
+.small-note { font-size: 10px; margin-right: 10px; }
+
+.address-grid { width: 100%; border-collapse: collapse; margin: 6px 0; }
+.address-grid td { border: none; padding: 0; vertical-align: top; width: 50%; }
+.address-col { padding: 5.5px 11px; border: 1px solid #000; }
+.address-col:first-child { border-right: none; }
+.address-col .char-boxes { margin-bottom: 6px; }
+.pincode-row { margin: 4px 0; }
+.underline-row {
+    font-size: 11px;
+    margin-bottom: 7px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+.underline-row .dotted-fill { min-width: 60px; }
+
+.exam-table { margin-top: 10px; }
+.exam-title { text-align: left; font-size: 11.5px; }
+.exam-subtitle { font-weight: normal; font-size: 9px; }
+.exam-table td, .exam-table th { font-size: 11px; text-align: center; height: 24px; }
