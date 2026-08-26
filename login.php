@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body class="login-page">
-<div class="login-shell<?= $error ? ' is-open' : '' ?>" id="authShell">
+<div class="login-shell is-open" id="authShell">
 
   <!-- Sign-in form (revealed as the overlay slides aside) -->
   <div class="auth-form-panel">
@@ -213,9 +213,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="button" class="auth-toggle-btn" id="authOpenBtn">Sign In</button>
           </div>
           <div class="auth-state-open">
-            <h1 class="auth-headline">Hello, friend!</h1>
+            <h1 class="auth-headline" style="color: white !important;">Hello, friend!</h1>
             <p class="auth-sub">Manage universities, courses and student admissions — all in one registry.</p>
-            <button type="button" class="auth-back-btn" id="authCloseBtn"><i class="fa-solid fa-arrow-left me-1"></i> Back</button>
+            <!-- <button type="button" class="auth-back-btn" id="authCloseBtn"><i class="fa-solid fa-arrow-left me-1"></i> Back</button> -->
           </div>
         </div>
       </div>
@@ -224,25 +224,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </div>
 
-<script>
-(function () {
-  var shell = document.getElementById('authShell');
-  var openBtn = document.getElementById('authOpenBtn');
-  var closeBtn = document.getElementById('authCloseBtn');
-
-  if (openBtn) {
-    openBtn.addEventListener('click', function () {
-      shell.classList.add('is-open');
-      var u = document.getElementById('username');
-      if (u) setTimeout(function () { u.focus(); }, 420);
-    });
-  }
-  if (closeBtn) {
-    closeBtn.addEventListener('click', function () {
-      shell.classList.remove('is-open');
-    });
-  }
-})();
-</script>
 </body>
 </html>
