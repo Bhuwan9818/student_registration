@@ -328,7 +328,8 @@
 .vsa-cta-text { position: relative; z-index: 2; max-width: 520px; }
 .vsa-cta-text h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 10px; line-height: 1.25; }
 .vsa-cta-text p { color: rgba(255,255,255,.75); font-size: .94rem; line-height: 1.6; }
-.vsa-cta-actions { position: relative; z-index: 2; flex: none; }
+.vsa-cta-actions { position: relative; z-index: 2; flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+.vsa-cta-call { padding: 4px 2px; font-size: .88rem; }
 
 /* ---------- Footer ---------- */
 .vsa-footer { background: var(--ink); color: rgba(255,255,255,.55); padding: 56px 0 26px; }
@@ -341,7 +342,7 @@
 .vsa-footer-links { flex: 0 0 auto; }
 .vsa-footer-links h4 { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.4); margin-bottom: 16px; }
 .vsa-footer-links ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-.vsa-footer-links a { color: rgba(255,255,255,.65); font-size: .87rem; }
+.vsa-footer-links a { color: rgba(255,255,255,.65); font-size: .87rem; display: inline-flex; align-items: center; gap: 8px; }
 .vsa-footer-links a:hover { color: var(--gold-light); }
 .vsa-footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 22px; font-size: .77rem; flex-wrap: wrap; gap: 10px; }
 
@@ -443,8 +444,9 @@
 
   .vsa-cta { padding: 36px 22px; text-align: center; justify-content: center; }
   .vsa-cta-text { text-align: left; }
-  .vsa-cta-actions { width: 100%; }
+  .vsa-cta-actions { width: 100%; align-items: stretch; }
   .vsa-cta-actions .vsa-btn-primary { width: 100%; justify-content: center; }
+  .vsa-cta-call { text-align: center; justify-content: center; border: 1px solid rgba(255,255,255,.3); border-radius: 12px; padding: 13px; }
 
   .vsa-footer-top { flex-direction: column; gap: 30px; }
   .vsa-footer-bottom { flex-direction: column; align-items: flex-start; gap: 6px; }
