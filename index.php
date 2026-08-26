@@ -346,6 +346,7 @@ $year = date('Y');
       </div>
       <div class="vsa-cta-actions">
         <a href="mailto:info@vsacademyonline.com" class="vsa-btn-primary"><i class="fa-solid fa-envelope"></i> Contact Us</a>
+        <a href="tel:+918750113364" class="vsa-btn-ghost vsa-cta-call"><i class="fa-solid fa-phone"></i> +91 98765 43210</a>
       </div>
     </div>
   </div>
@@ -370,6 +371,13 @@ $year = date('Y');
           <li><a href="#features">Why Us</a></li>
           <li><a href="#partners">Universities</a></li>
           <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="vsa-footer-links">
+        <h4>Get In Touch</h4>
+        <ul>
+          <li><a href="tel:+918750113364"><i class="fa-solid fa-phone"></i> +91 98765 43210</a></li>
+          <li><a href="mailto:info@vsacademyonline.com"><i class="fa-solid fa-envelope"></i> admissions@vsacademy.in</a></li>
         </ul>
       </div>
     </div>
