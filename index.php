@@ -324,7 +324,7 @@ $year = date('Y');
             <span class="vsa-pc-avatar"><?= e(strtoupper(substr($p['name'], 0, 1))) ?></span>
             <div>
               <div class="vsa-pc-name"><?= e($p['name']) ?></div>
-              <div class="vsa-pc-tag">Partner University</div>
+              <!-- <div class="vsa-pc-tag">Partner University</div> -->
             </div>
           </div>
         <?php endforeach; ?>
