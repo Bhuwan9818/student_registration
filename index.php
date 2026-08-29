@@ -345,7 +345,7 @@ $year = date('Y');
         <p>Whether you're a student exploring your options or a university looking to reach more of them, we'd love to help. Get in touch and let's get started.</p>
       </div>
       <div class="vsa-cta-actions">
-        <a href="mailto:" class="vsa-btn-primary"><i class="fa-solid fa-envelope"></i> Contact Us</a>
+        <a href="mailto:info@vsacademyonline.com" class="vsa-btn-primary"><i class="fa-solid fa-envelope"></i> Contact Us</a>
         <a href="tel:+918750113364" class="vsa-btn-ghost vsa-cta-call"><i class="fa-solid fa-phone"></i> +91 8750113364</a>
       </div>
     </div>
