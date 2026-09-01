@@ -70,12 +70,13 @@ require_once __DIR__ . '/includes/header.php';
   <div class="table-responsive">
     <table class="table table-sm table-ledger align-middle">
       <thead class="table-light">
-        <tr><th>Reg No</th><th>Type</th><th>Name</th><th>Course</th><th>Status</th><th>Fee</th><th>Date</th><th></th></tr>
+        <tr><th>Reg No</th><th>Enrollment No</th><th>Type</th><th>Name</th><th>Course</th><th>Status</th><th>Fee</th><th>Date</th><th></th></tr>
       </thead>
       <tbody>
         <?php foreach ($students as $s): ?>
         <tr>
           <td class="reg-no"><?= e($s['registration_no']) ?></td>
+          <td class="reg-no"><?= $s['enrollment_no'] ? e($s['enrollment_no']) : '<span class="text-muted">—</span>' ?></td>
           <td><span class="badge bg-<?= $s['registration_type'] == 'fresh' ? 'primary' : 'info' ?>"><?= $s['registration_type'] == 'fresh' ? 'Fresh' : 'Re-Reg' ?></span></td>
           <td><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
           <td><?= e($s['course_name'] ?? '-') ?></td>
