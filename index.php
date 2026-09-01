@@ -23,7 +23,7 @@ try {
 // A handful of active university partners to showcase.
 $partners = [];
 try {
-    $partners = $pdo->query("SELECT name FROM universities WHERE status = 'active' ORDER BY created_at DESC LIMIT 8")->fetchAll();
+    $partners = $pdo->query("SELECT name FROM universities WHERE status = 'active' ORDER BY created_at ")->fetchAll();
 } catch (\Throwable $ex) {
     // Leave partners empty — the section shows a friendly placeholder.
 }
