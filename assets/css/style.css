@@ -430,6 +430,10 @@ a { color: var(--navy-light); }
 }
 .btn-gold:hover { background: #A17F29; border-color: #A17F29; color: #fff; }
 
+/* Text color utilities for sharing/discount amounts */
+.text-gold { color: var(--gold) !important; }
+.text-success { color: var(--success) !important; }
+
 /* ---------- Seat capacity bar ---------- */
 .seat-bar {
   height: 6px;
