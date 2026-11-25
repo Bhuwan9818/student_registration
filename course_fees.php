@@ -13,6 +13,9 @@ if (!$course) {
 }
 
 $totalSemesters = courseTotalSemesters($course);
+$feeFrequency = getCourseFeeFrequency($pdo, $courseId);
+$periods = getCourseFeePeriods($pdo, $courseId);
+
 $pageTitle = 'Fee Structure - ' . $course['name'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -21,10 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdo->prepare("UPDATE courses SET registration_fee = ?, exam_fee = ? WHERE id = ?")
         ->execute([$registrationFee, $examFee, $courseId]);
 
-    for ($sem = 1; $sem <= $totalSemesters; $sem++) {
-        $amount = (float)($_POST['semester'][$sem] ?? 0);
+    // Save fees for each period (year or semester)
+    foreach ($periods as $p) {
+        $amount = (float)($_POST['period'][$p['number']] ?? 0);
         $stmt = $pdo->prepare("INSERT INTO course_fees (course_id, semester_no, amount) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE amount = VALUES(amount)");
-        $stmt->execute([$courseId, $sem, $amount]);
+        $stmt->execute([$courseId, $p['number'], $amount]);
     }
     flash('success', 'Fee structure updated for ' . $course['name'] . '.');
     redirect('course_fees.php?course_id=' . $courseId);
@@ -51,8 +55,8 @@ require_once __DIR__ . '/includes/header.php';
 <div class="table-card p-4" style="max-width:700px;">
   <p class="text-muted small mb-3">
     Set the fee structure for this <?= $course['duration_years'] ?>-year course
-    (<?= $totalSemesters ?> semesters total). These amounts appear automatically
-    when staff submit a student's fee for the matching semester.
+    (<?= count($periods) ?> <?= $feeFrequency === 'yearly' ? 'years' : 'semesters' ?> total, <?= getFeeFrequencyLabel($feeFrequency) ?>).
+    These amounts appear automatically when staff submit a student's fee for the matching period.
   </p>
   <form method="POST">
 
@@ -64,31 +68,31 @@ require_once __DIR__ . '/includes/header.php';
           <input type="number" step="0.01" min="0" name="registration_fee" class="form-control"
                  value="<?= e($course['registration_fee'] ?? 0) ?>" placeholder="0.00">
         </div>
-        <div class="form-text">Charged once, only in Semester 1.</div>
+        <div class="form-text">Charged once, only in the first period.</div>
       </div>
       <div class="col-md-6">
-        <label class="form-label">Exam Fee <small class="text-muted">(every semester)</small></label>
+        <label class="form-label">Exam Fee <small class="text-muted">(every period)</small></label>
         <div class="input-group">
           <span class="input-group-text">₹</span>
           <input type="number" step="0.01" min="0" name="exam_fee" class="form-control"
                  value="<?= e($course['exam_fee'] ?? 0) ?>" placeholder="0.00">
         </div>
-        <div class="form-text">Same amount, added to every semester's expected fee.</div>
+        <div class="form-text">Same amount, added to every period's expected fee.</div>
       </div>
     </div>
 
-    <label class="form-label mb-2 d-block">Semester-wise Fee</label>
+    <label class="form-label mb-2 d-block"><?= $feeFrequency === 'yearly' ? 'Yearly Fee' : 'Semester-wise Fee' ?></label>
     <div class="row g-3">
-      <?php for ($sem = 1; $sem <= $totalSemesters; $sem++): ?>
+      <?php foreach ($periods as $p): ?>
       <div class="col-md-6">
-        <label class="form-label">Semester <?= $sem ?></label>
+        <label class="form-label"><?= e($p['label']) ?></label>
         <div class="input-group">
           <span class="input-group-text">₹</span>
-          <input type="number" step="0.01" min="0" name="semester[<?= $sem ?>]" class="form-control"
-                 value="<?= e($existing[$sem] ?? '') ?>" placeholder="0.00">
+          <input type="number" step="0.01" min="0" name="period[<?= $p['number'] ?>]" class="form-control"
+                 value="<?= e($existing[$p['number']] ?? '') ?>" placeholder="0.00">
         </div>
       </div>
-      <?php endfor; ?>
+      <?php endforeach; ?>
     </div>
     <button type="submit" class="btn btn-primary mt-4"><i class="fa-solid fa-check"></i> Save Fee Structure</button>
   </form>
