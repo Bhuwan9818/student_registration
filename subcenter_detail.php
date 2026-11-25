@@ -27,7 +27,8 @@ $regStmt = $pdo->prepare("SELECT s.*, c.name as course_name, un.name as universi
 $regStmt->execute([$id]);
 $registrations = $regStmt->fetchAll();
 
-$feeTotals = getFeeTotals($pdo, $id);
+// Use parent center's sharing configuration for fee totals
+$feeTotals = getFeeTotalsWithSharing($pdo, $subcenter['center_id']);
 
 // ---- CSV export ----
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
@@ -191,18 +192,44 @@ function togglePwd() {
   <div class="col-6 col-md-4">
     <div class="stat-card">
       <i class="fa-solid fa-wifi stat-icon"></i>
-      <div class="stat-label">Online Fees</div>
+      <div class="stat-label">Online Fees (Net)</div>
       <div class="stat-value" style="font-size:1.5rem;">₹<?= number_format($feeTotals['online_total'], 2) ?></div>
     </div>
   </div>
   <div class="col-6 col-md-4">
     <div class="stat-card">
       <i class="fa-solid fa-money-bill-wave stat-icon"></i>
-      <div class="stat-label">Offline Fees</div>
+      <div class="stat-label">Offline Fees (Net)</div>
       <div class="stat-value" style="font-size:1.5rem;">₹<?= number_format($feeTotals['offline_total'], 2) ?></div>
     </div>
   </div>
 </div>
+
+<?php if ($feeTotals['discount_total'] > 0): ?>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-4">
+    <div class="stat-card" style="border-left-color: var(--success);">
+      <i class="fa-solid fa-tags stat-icon" style="color: var(--success);"></i>
+      <div class="stat-label">Center Discount (Sharing)</div>
+      <div class="stat-value" style="font-size:1.3rem; color: var(--success);">₹<?= number_format($feeTotals['discount_total'], 2) ?></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="stat-card" style="border-left-color: var(--navy);">
+      <i class="fa-solid fa-sack-dollar stat-icon" style="color: var(--navy);"></i>
+      <div class="stat-label">Net Collected</div>
+      <div class="stat-value" style="font-size:1.3rem; color: var(--navy);">₹<?= number_format($feeTotals['net_total'], 2) ?></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="stat-card">
+      <i class="fa-solid fa-money-bill-trend-up stat-icon"></i>
+      <div class="stat-label">Gross Course Fees</div>
+      <div class="stat-value" style="font-size:1.3rem;">₹<?= number_format($feeTotals['gross_total'], 2) ?></div>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
 
 <div class="table-card p-3">
   <div class="section-title mb-3">All Registrations by <?= e($subcenter['full_name']) ?></div>

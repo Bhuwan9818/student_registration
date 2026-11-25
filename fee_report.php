@@ -23,8 +23,9 @@ if (!empty($_GET['q'])) {
 }
 $whereSql = 'WHERE ' . implode(' AND ', $where);
 
-$sql = "SELECT f.*, s.registration_no, s.first_name, s.last_name,
-               u.full_name as owner_name, u.id as owner_id, pu.full_name as center_name
+$sql = "SELECT f.*, s.registration_no, s.first_name, s.last_name, s.course_id, s.semester_no,
+               u.full_name as owner_name, u.id as owner_id, u.parent_user_id as owner_parent_id,
+               pu.full_name as center_name
         FROM fees f
         JOIN students s ON s.id = f.student_id
         JOIN users u ON u.id = s.created_by
@@ -35,20 +36,41 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $fees = $stmt->fetchAll();
 
-$total = array_sum(array_column($fees, 'amount'));
+// Calculate sharing for each fee using new logic
+$grossTotal = 0;
+$discountTotal = 0;
+$netTotal = 0;
+foreach ($fees as &$f) {
+    $f['sharing_calc'] = calculateFeeSharing($pdo, $f);
+    $grossTotal += $f['sharing_calc']['course_fee'];
+    $discountTotal += $f['sharing_calc']['discount_amount'];
+    $netTotal += $f['sharing_calc']['center_payable_amount'];
+}
+unset($f);
 
 // ---- CSV export ----
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="' . $scope . '_' . $channel . '_fees_' . date('Y-m-d') . '.csv"');
     $out = fopen('php://output', 'w');
-    $headerRow = ['Reg No', 'Student', $scope === 'subcenter' ? 'Sub-Center' : 'Center', 'Amount', 'Mode', 'UTR/Reference', 'Status', 'Date'];
+    $headerRow = ['Reg No', 'Student', $scope === 'subcenter' ? 'Sub-Center' : 'Center', 'Course Fee', 'Sharing %', 'Center Discount', 'Center Pays', 'Submitted Amt', 'Mode', 'UTR/Reference', 'Status', 'Date'];
     if ($scope === 'subcenter') { $headerRow[] = 'Under Center'; }
     fputcsv($out, $headerRow);
     foreach ($fees as $f) {
+        $calc = $f['sharing_calc'];
         $row = [
-            $f['registration_no'], $f['first_name'] . ' ' . $f['last_name'], $f['owner_name'],
-            $f['amount'], $f['mode'], $f['utr_no'], $f['status'], $f['submitted_at']
+            $f['registration_no'],
+            $f['first_name'] . ' ' . $f['last_name'],
+            $f['owner_name'],
+            $calc['course_fee'],
+            $calc['sharing_percentage'] . '%',
+            $calc['discount_amount'],
+            $calc['center_payable_amount'],
+            $calc['submitted_amount'],
+            $f['mode'],
+            $f['utr_no'],
+            $f['status'],
+            $f['submitted_at']
         ];
         if ($scope === 'subcenter') { $row[] = $f['center_name']; }
         fputcsv($out, $row);
@@ -83,7 +105,7 @@ require_once __DIR__ . '/includes/header.php';
       <input type="text" name="q" class="form-control form-control-sm" placeholder="Search name / reg no / <?= strtolower($scopeLabel) ?>" value="<?= e($_GET['q'] ?? '') ?>">
     </div>
     <div class="col-md-2">
-      <select name="status" class="form-select form-select-sm">
+      <select name="status" class="form-select form-control-sm">
         <option value="">All Status</option>
         <option value="pending" <?= (($_GET['status'] ?? '') == 'pending') ? 'selected' : '' ?>>Pending</option>
         <option value="verified" <?= (($_GET['status'] ?? '') == 'verified') ? 'selected' : '' ?>>Verified</option>
@@ -105,10 +127,42 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </form>
 
+<!-- Summary Cards -->
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <i class="fa-solid fa-money-bill-wave stat-icon"></i>
+      <div class="stat-label">Gross Course Fees</div>
+      <div class="stat-value" style="font-size:1.2rem;">₹<?= number_format($grossTotal, 2) ?></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card" style="border-left-color: var(--success);">
+      <i class="fa-solid fa-tags stat-icon" style="color: var(--success);"></i>
+      <div class="stat-label">Center Discount (Sharing)</div>
+      <div class="stat-value" style="font-size:1.2rem; color: var(--success);">₹<?= number_format($discountTotal, 2) ?></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card" style="border-left-color: var(--navy);">
+      <i class="fa-solid fa-sack-dollar stat-icon" style="color: var(--navy);"></i>
+      <div class="stat-label">Net Collected from Centers</div>
+      <div class="stat-value" style="font-size:1.2rem; color: var(--navy);">₹<?= number_format($netTotal, 2) ?></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <i class="fa-solid fa-hand-holding-dollar stat-icon" style="color: var(--gold);"></i>
+      <div class="stat-label">Center Savings</div>
+      <div class="stat-value" style="font-size:1.2rem; color: var(--gold);">₹<?= number_format($grossTotal - $netTotal, 2) ?></div>
+    </div>
+  </div>
+</div>
+
 <div class="table-card p-3">
   <div class="d-flex justify-content-between mb-2">
     <span class="text-muted small"><?= count($fees) ?> record(s)</span>
-    <span class="small">Total: <strong>₹<?= number_format($total, 2) ?></strong></span>
+    <span class="small">Gross: <strong>₹<?= number_format($grossTotal, 2) ?></strong> | Net: <strong>₹<?= number_format($netTotal, 2) ?></strong></span>
   </div>
   <div class="table-responsive">
     <table class="table table-sm table-ledger align-middle">
@@ -116,11 +170,13 @@ require_once __DIR__ . '/includes/header.php';
         <tr>
           <th>Reg No</th><th>Student</th><th><?= e($scopeLabel) ?></th>
           <?php if ($scope === 'subcenter'): ?><th>Under Center</th><?php endif; ?>
-          <th>Amount</th><th>Mode</th><th>Reference</th><th>Status</th><th>Date</th><th></th>
+          <th>Course Fee</th><th>Sharing %</th><th>Center Discount</th><th>Center Pays</th><th>Submitted</th><th>Mode</th><th>Reference</th><th>Status</th><th>Date</th><th></th>
         </tr>
       </thead>
       <tbody>
-        <?php foreach ($fees as $f): ?>
+        <?php foreach ($fees as $f):
+            $calc = $f['sharing_calc'];
+        ?>
         <tr>
           <td class="reg-no"><?= e($f['registration_no']) ?></td>
           <td><?= e($f['first_name'] . ' ' . $f['last_name']) ?></td>
@@ -132,7 +188,11 @@ require_once __DIR__ . '/includes/header.php';
             <?php endif; ?>
           </td>
           <?php if ($scope === 'subcenter'): ?><td><?= e($f['center_name']) ?></td><?php endif; ?>
-          <td>₹<?= number_format($f['amount'], 2) ?></td>
+          <td>₹<?= number_format($calc['course_fee'], 2) ?></td>
+          <td><?= number_format($calc['sharing_percentage'], 2) ?>%</td>
+          <td class="text-success">₹<?= number_format($calc['discount_amount'], 2) ?></td>
+          <td class="text-danger fw-bold">₹<?= number_format($calc['center_payable_amount'], 2) ?></td>
+          <td>₹<?= number_format($calc['submitted_amount'], 2) ?></td>
           <td><?= e($f['mode']) ?></td>
           <td><?= e($f['utr_no'] ?: '-') ?></td>
           <td><?= statusBadge($f['status']) ?></td>
@@ -141,7 +201,7 @@ require_once __DIR__ . '/includes/header.php';
         </tr>
         <?php endforeach; ?>
         <?php if (!$fees): ?>
-          <tr><td colspan="<?= $scope === 'subcenter' ? 10 : 9 ?>" class="text-center text-muted py-4">No <?= $channel ?> fee records found.</td></tr>
+          <tr><td colspan="13" class="text-center text-muted py-4">No <?= $channel ?> fee records found.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
