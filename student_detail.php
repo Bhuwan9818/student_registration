@@ -188,13 +188,18 @@ require_once __DIR__ . '/includes/header.php';
         <p class="text-muted small mb-2">No documents uploaded.</p>
       <?php endif; ?>
 
+      <?php
+      // Get course fee frequency for period label
+      $courseFreq = getCourseFeeFrequency($pdo, $student['course_id']);
+      $periodLabel = $courseFreq === 'yearly' ? 'Year' : 'Semester';
+      ?>
       <h6 class="text-primary mt-3">Course Applied For</h6>
       <div class="row small mb-2">
         <div class="col-md-4"><strong>University:</strong> <?= e($student['university_name']) ?></div>
         <div class="col-md-4"><strong>Course:</strong> <?= e($student['course_name']) ?></div>
         <div class="col-md-4"><strong>Specialization:</strong> <?= e($student['specialization'] ?: '-') ?></div>
         <div class="col-md-4"><strong>Session:</strong> <?= e($student['year_label']) ?></div>
-        <div class="col-md-4"><strong>Semester:</strong> <?= e($student['semester_no']) ?></div>
+        <div class="col-md-4"><strong><?= e($periodLabel) ?>:</strong> <?= e($student['semester_no']) ?></div>
       </div>
 
       <div class="text-muted small mt-3">Submitted by <?= e($student['staff_name']) ?> on <?= date('d M Y, h:i A', strtotime($student['created_at'])) ?></div>

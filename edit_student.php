@@ -272,14 +272,20 @@ require_once __DIR__ . '/includes/header.php';
           <?php endforeach; ?>
         </select>
       </div>
-      <div class="col-md-2">
-        <label class="form-label">Semester</label>
-        <select name="semester_no" class="form-select">
-          <?php for ($i = 1; $i <= 12; $i++): ?>
-            <option value="<?= $i ?>" <?= $student['semester_no'] == $i ? 'selected' : '' ?>><?= $i ?></option>
-          <?php endfor; ?>
-        </select>
-      </div>
+      <?php
+        // Get course fee frequency for period label
+        $courseFreq = getCourseFeeFrequency($pdo, $student['course_id']);
+        $periodLabel = $courseFreq === 'yearly' ? 'Year' : 'Semester';
+        $maxPeriods = $courseFreq === 'yearly' ? 6 : 12;
+        ?>
+        <div class="col-md-2">
+          <label class="form-label"><?= e($periodLabel) ?></label>
+          <select name="semester_no" class="form-select">
+            <?php for ($i = 1; $i <= $maxPeriods; $i++): ?>
+              <option value="<?= $i ?>" <?= $student['semester_no'] == $i ? 'selected' : '' ?>><?= $i ?></option>
+            <?php endfor; ?>
+          </select>
+        </div>
     </div>
   </div>
 

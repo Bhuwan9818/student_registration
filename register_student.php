@@ -16,6 +16,44 @@ if ($step < 1 || $step > 5) { $step = 1; }
 $academicLevels = academicLevelLabels();
 $documentTypes  = documentTypeLabels();
 
+// Pre-load courses with their effective fee frequency
+$courses = $pdo->prepare("SELECT c.*, u.fee_frequency as uni_fee_freq
+                          FROM courses c
+                          JOIN universities u ON u.id = c.university_id
+                          WHERE c.status='active' AND c.university_id = ?
+                          ORDER BY c.name");
+$courses->execute([$activeUni['id']]);
+$courses = $courses->fetchAll();
+
+// Compute effective fee frequency for each course
+foreach ($courses as &$c) {
+    $c['effective_fee_frequency'] = $c['fee_frequency'] ?? $c['uni_fee_freq'] ?? 'semester';
+}
+unset($c);
+
+$sessionsYrs = $pdo->query("SELECT * FROM sessions_years WHERE status='active' ORDER BY year_label DESC")->fetchAll();
+
+$courseNameMap = [];
+$courseFrequencyMap = [];
+foreach ($courses as $c) {
+    $courseNameMap[$c['id']] = $c['name'];
+    $courseFrequencyMap[$c['id']] = $c['effective_fee_frequency'];
+}
+$sessionLabelMap = [];
+foreach ($sessionsYrs as $sy) { $sessionLabelMap[$sy['id']] = $sy['year_label']; }
+
+// Sub-courses grouped by course, for the dependent dropdown in Step 1
+$subCoursesByCourse = [];
+if ($courses) {
+    $courseIds = array_column($courses, 'id');
+    $placeholders = implode(',', array_fill(0, count($courseIds), '?'));
+    $scStmt = $pdo->prepare("SELECT * FROM sub_courses WHERE status='active' AND course_id IN ($placeholders) ORDER BY name");
+    $scStmt->execute($courseIds);
+    foreach ($scStmt->fetchAll() as $sc) {
+        $subCoursesByCourse[$sc['course_id']][] = $sc['name'];
+    }
+}
+
 // ---- Handle form submission for each step ----
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -33,7 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['wizard']['session_id']      = $_POST['session_id'];
         $_SESSION['wizard']['course_id']       = $_POST['course_id'];
         $_SESSION['wizard']['specialization']  = trim($_POST['specialization'] ?? '');
-        $_SESSION['wizard']['semester_no']     = (int)($_POST['semester_no'] ?? 1);
+        // Store period number (semester_no for semester, year_no for yearly)
+        $_SESSION['wizard']['period_no']       = (int)($_POST['period_no'] ?? 1);
+        // Keep semester_no for backward compatibility
+        $_SESSION['wizard']['semester_no']     = (int)($_POST['period_no'] ?? 1);
 
         $_SESSION['wizard']['father_name']       = trim($_POST['father_name'] ?? '');
         $_SESSION['wizard']['mother_name']       = trim($_POST['mother_name'] ?? '');
@@ -153,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Document rows (photo already stored on students.photo_path too, but log it here as well for a complete document list)
+        // Document rows
         foreach ($w['documents'] ?? [] as $docKey => $path) {
             $ins = $pdo->prepare("INSERT INTO student_documents (student_id, doc_type, file_path) VALUES (?,?,?)");
             $ins->execute([$newStudentId, $docKey, $path]);
@@ -171,25 +212,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $w = $_SESSION['wizard'];
 
-$courses = $pdo->prepare("SELECT * FROM courses WHERE status='active' AND university_id = ? ORDER BY name");
-$courses->execute([$activeUni['id']]);
-$courses = $courses->fetchAll();
-$sessionsYrs = $pdo->query("SELECT * FROM sessions_years WHERE status='active' ORDER BY year_label DESC")->fetchAll();
+// Current selected course frequency for pre-populating period dropdown
+$selectedCourseFreq = 'semester';
+if (!empty($w['course_id']) && isset($courseFrequencyMap[$w['course_id']])) {
+    $selectedCourseFreq = $courseFrequencyMap[$w['course_id']];
+}
 
-$courseNameMap = [];
-foreach ($courses as $c) { $courseNameMap[$c['id']] = $c['name']; }
-$sessionLabelMap = [];
-foreach ($sessionsYrs as $sy) { $sessionLabelMap[$sy['id']] = $sy['year_label']; }
-
-// Sub-courses grouped by course, for the dependent dropdown in Step 1
-$subCoursesByCourse = [];
-if ($courses) {
-    $courseIds = array_column($courses, 'id');
-    $placeholders = implode(',', array_fill(0, count($courseIds), '?'));
-    $scStmt = $pdo->prepare("SELECT * FROM sub_courses WHERE status='active' AND course_id IN ($placeholders) ORDER BY name");
-    $scStmt->execute($courseIds);
-    foreach ($scStmt->fetchAll() as $sc) {
-        $subCoursesByCourse[$sc['course_id']][] = $sc['name'];
+// Generate periods for the selected course frequency
+$periodOptions = [];
+if ($selectedCourseFreq === 'yearly') {
+    // For yearly, show years 1-6 (max typical duration)
+    for ($i = 1; $i <= 6; $i++) {
+        $periodOptions[$i] = "Year $i";
+    }
+} else {
+    // For semester, show semesters 1-12 (max typical duration)
+    for ($i = 1; $i <= 12; $i++) {
+        $periodOptions[$i] = "Semester $i";
     }
 }
 
@@ -234,7 +273,9 @@ require_once __DIR__ . '/includes/header.php';
           <option value="">Select Course</option>
           <?php foreach ($courses as $c): ?>
             <?php [$filled, $total] = courseSeatUsage($pdo, $c['id']); ?>
-            <option value="<?= $c['id'] ?>" <?= (($w['course_id'] ?? '') == $c['id']) ? 'selected' : '' ?>>
+            <option value="<?= $c['id'] ?>"
+                    data-frequency="<?= e($c['effective_fee_frequency']) ?>"
+                    <?= (($w['course_id'] ?? '') == $c['id']) ? 'selected' : '' ?>>
               <?= e($c['name']) ?><?= $total ? " ($filled/$total seats)" : '' ?>
             </option>
           <?php endforeach; ?>
@@ -250,12 +291,15 @@ require_once __DIR__ . '/includes/header.php';
         <div id="subCourseHint" class="small text-muted mt-1"></div>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Semester</label>
-        <select name="semester_no" class="form-select">
-          <?php for ($i = 1; $i <= 12; $i++): ?>
-            <option value="<?= $i ?>" <?= (($w['semester_no'] ?? 1) == $i) ? 'selected' : '' ?>><?= $i ?></option>
-          <?php endfor; ?>
+        <label class="form-label" id="periodLabel"><?= $selectedCourseFreq === 'yearly' ? 'Year' : 'Semester' ?></label>
+        <select name="period_no" id="periodSelect" class="form-select" required>
+          <?php foreach ($periodOptions as $num => $label): ?>
+            <option value="<?= $num ?>" <?= (($w['period_no'] ?? $w['semester_no'] ?? 1) == $num) ? 'selected' : '' ?>><?= $label ?></option>
+          <?php endforeach; ?>
         </select>
+        <div class="small text-muted mt-1" id="periodHint">
+          <?= $selectedCourseFreq === 'yearly' ? 'Yearly fee structure — select the academic year' : 'Semester-wise fee structure — select the semester' ?>
+        </div>
       </div>
     </div>
 
@@ -445,7 +489,7 @@ require_once __DIR__ . '/includes/header.php';
           $required = in_array($docKey, ['photo', 'aadhaar', 'student_signature']);
           $showAbc = $docKey === 'abc_document' && empty($w['abc_id']);
           $showDeb = $docKey === 'deb_document' && empty($w['deb_id']);
-          if ($showAbc || $showDeb) continue; // skip ID-proof uploads when no ID was entered
+          if ($showAbc || $showDeb) continue;
           $already = $w['documents'][$docKey] ?? null;
         ?>
         <div class="col-md-3">
@@ -471,7 +515,10 @@ require_once __DIR__ . '/includes/header.php';
       <div class="row small mb-3">
         <div class="col-md-4"><strong>Course:</strong> <?= e($courseNameMap[$w['course_id']] ?? '-') ?></div>
         <div class="col-md-4"><strong>Specialization:</strong> <?= e($w['specialization'] ?: '-') ?></div>
-        <div class="col-md-4"><strong>Session:</strong> <?= e($sessionLabelMap[$w['session_id']] ?? '-') ?> | Semester <?= e($w['semester_no']) ?></div>
+        <div class="col-md-4">
+          <strong>Session:</strong> <?= e($sessionLabelMap[$w['session_id']] ?? '-') ?> |
+          <strong><?= $selectedCourseFreq === 'yearly' ? 'Year' : 'Semester' ?>:</strong> <?= e($w['period_no'] ?? $w['semester_no'] ?? 1) ?>
+        </div>
       </div>
 
       <h6 class="text-primary">Basic Details</h6>
@@ -522,12 +569,16 @@ require_once __DIR__ . '/includes/header.php';
 <script>
 const subCoursesByCourse = <?= json_encode($subCoursesByCourse) ?>;
 const currentSpecialization = <?= json_encode($w['specialization'] ?? '') ?>;
+const courseFrequencies = <?= json_encode($courseFrequencyMap) ?>;
 
 document.addEventListener('DOMContentLoaded', function () {
   const courseSelect = document.getElementById('courseSelect');
   const subSelect = document.getElementById('subCourseSelect');
   const subText = document.getElementById('subCourseText');
   const hint = document.getElementById('subCourseHint');
+  const periodSelect = document.getElementById('periodSelect');
+  const periodLabel = document.getElementById('periodLabel');
+  const periodHint = document.getElementById('periodHint');
 
   function refreshSubCourses() {
     const options = subCoursesByCourse[courseSelect.value] || [];
@@ -548,9 +599,46 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function refreshPeriodOptions() {
+    const selectedCourseId = courseSelect.value;
+    const frequency = courseFrequencies[selectedCourseId] || 'semester';
+
+    if (frequency === 'yearly') {
+      periodLabel.textContent = 'Year';
+      periodHint.textContent = 'Yearly fee structure — select the academic year';
+      periodSelect.innerHTML = '';
+      for (let i = 1; i <= 6; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = 'Year ' + i;
+        periodSelect.appendChild(opt);
+      }
+    } else {
+      periodLabel.textContent = 'Semester';
+      periodHint.textContent = 'Semester-wise fee structure — select the semester';
+      periodSelect.innerHTML = '';
+      for (let i = 1; i <= 12; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = 'Semester ' + i;
+        periodSelect.appendChild(opt);
+      }
+    }
+
+    // Restore previously selected value if valid
+    const currentVal = periodSelect.value;
+    if (!periodSelect.querySelector(`option[value="${currentVal}"]`)) {
+      periodSelect.value = 1;
+    }
+  }
+
   if (courseSelect) {
-    courseSelect.addEventListener('change', refreshSubCourses);
+    courseSelect.addEventListener('change', function() {
+      refreshSubCourses();
+      refreshPeriodOptions();
+    });
     refreshSubCourses();
+    refreshPeriodOptions();
   }
 });
 </script>
