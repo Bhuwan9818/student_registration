@@ -10,8 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_item'])) {
     $name = trim($_POST['name']);
     $logoPath = handleUpload('logo', 'university_logos', ['jpg','jpeg','png','svg','webp']);
     $formTemplate = $_POST['form_template'] ?: null;
-    $ins = $pdo->prepare("INSERT INTO universities (name, logo_path, form_template) VALUES (?, ?, ?)");
-    $ins->execute([$name, $logoPath, $formTemplate]);
+    $feeFrequency = $_POST['fee_frequency'] ?? 'semester';
+    $ins = $pdo->prepare("INSERT INTO universities (name, logo_path, form_template, fee_frequency) VALUES (?, ?, ?, ?)");
+    $ins->execute([$name, $logoPath, $formTemplate, $feeFrequency]);
     flash('success', 'University added successfully.');
     redirect('admin_universities.php');
 }
@@ -22,12 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_item'])) {
     $name = trim($_POST['name']);
     $logoPath = handleUpload('logo', 'university_logos', ['jpg','jpeg','png','svg','webp']);
     $formTemplate = $_POST['form_template'] ?: null;
+    $feeFrequency = $_POST['fee_frequency'] ?? 'semester';
     if ($logoPath) {
-        $upd = $pdo->prepare("UPDATE universities SET name = ?, logo_path = ?, form_template = ? WHERE id = ?");
-        $upd->execute([$name, $logoPath, $formTemplate, $id]);
+        $upd = $pdo->prepare("UPDATE universities SET name = ?, logo_path = ?, form_template = ?, fee_frequency = ? WHERE id = ?");
+        $upd->execute([$name, $logoPath, $formTemplate, $feeFrequency, $id]);
     } else {
-        $upd = $pdo->prepare("UPDATE universities SET name = ?, form_template = ? WHERE id = ?");
-        $upd->execute([$name, $formTemplate, $id]);
+        $upd = $pdo->prepare("UPDATE universities SET name = ?, form_template = ?, fee_frequency = ? WHERE id = ?");
+        $upd->execute([$name, $formTemplate, $feeFrequency, $id]);
     }
     flash('success', 'University updated successfully.');
     redirect('admin_universities.php');
@@ -180,10 +182,15 @@ require_once __DIR__ . '/includes/header.php';
               <label class="form-label">Replace Logo <small class="text-muted">(optional)</small></label>
               <input type="file" name="logo" class="form-control mb-3" accept=".jpg,.jpeg,.png,.svg,.webp">
               <label class="form-label">Printed Admission Form Layout</label>
-              <select name="form_template" class="form-select">
+              <select name="form_template" class="form-select mb-2">
                 <?php foreach (printFormTemplateOptions() as $key => $label): ?>
                   <option value="<?= e($key) ?>" <?= ($u['form_template'] ?? '') === $key ? 'selected' : '' ?>><?= e($label) ?></option>
                 <?php endforeach; ?>
+              </select>
+              <label class="form-label">Fee Frequency <small class="text-muted">(default = semester-wise)</small></label>
+              <select name="fee_frequency" class="form-select mb-2">
+                <option value="semester" <?= ($u['fee_frequency'] ?? 'semester') === 'semester' ? 'selected' : '' ?>>Semester-wise</option>
+                <option value="yearly" <?= ($u['fee_frequency'] ?? '') === 'yearly' ? 'selected' : '' ?>>Yearly</option>
               </select>
             </div>
             <div class="modal-footer"><button type="submit" name="edit_item" value="1" class="btn btn-primary btn-sm">Save Changes</button></div>
@@ -208,10 +215,15 @@ require_once __DIR__ . '/includes/header.php';
       <label class="form-label">University Logo <small class="text-muted">(optional)</small></label>
       <input type="file" name="logo" class="form-control mb-2" accept=".jpg,.jpeg,.png,.svg,.webp">
       <label class="form-label">Printed Admission Form Layout</label>
-      <select name="form_template" class="form-select">
+      <select name="form_template" class="form-select mb-2">
         <?php foreach (printFormTemplateOptions() as $key => $label): ?>
           <option value="<?= e($key) ?>"><?= e($label) ?></option>
         <?php endforeach; ?>
+      </select>
+      <label class="form-label">Fee Frequency <small class="text-muted">(default = semester-wise)</small></label>
+      <select name="fee_frequency" class="form-select mb-2">
+        <option value="semester">Semester-wise</option>
+        <option value="yearly">Yearly</option>
       </select>
       <div class="small text-muted mt-1">Controls how the admission form looks when staff/admin print a student's registration for this university.</div>
     </div>

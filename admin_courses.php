@@ -14,12 +14,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_item'])) {
     $name = trim($_POST['name']);
     $duration = (int)($_POST['duration_years'] ?? 1);
     $seats = !empty($_POST['total_seats']) ? (int)$_POST['total_seats'] : null;
+    $feeFrequency = $_POST['fee_frequency'] ?? null; // 'yearly', 'semester', or null (inherit)
 
     if (!$universityId || $name === '') {
         flash('error', 'University and course name are required.');
     } else {
-        $ins = $pdo->prepare("INSERT INTO courses (university_id, name, duration_years, total_seats) VALUES (?, ?, ?, ?)");
-        $ins->execute([$universityId, $name, $duration, $seats]);
+        $ins = $pdo->prepare("INSERT INTO courses (university_id, name, duration_years, total_seats, fee_frequency) VALUES (?, ?, ?, ?, ?)");
+        $ins->execute([$universityId, $name, $duration, $seats, $feeFrequency]);
         flash('success', 'Course added successfully.');
     }
     redirect('admin_courses.php?' . http_build_query(['university_id' => $universityId]));
@@ -32,9 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_item'])) {
     $name = trim($_POST['name']);
     $duration = (int)($_POST['duration_years'] ?? 1);
     $seats = $_POST['total_seats'] !== '' ? (int)$_POST['total_seats'] : null;
+    $feeFrequency = $_POST['fee_frequency'] ?? null;
 
-    $upd = $pdo->prepare("UPDATE courses SET university_id = ?, name = ?, duration_years = ?, total_seats = ? WHERE id = ?");
-    $upd->execute([$universityId, $name, $duration, $seats, $id]);
+    $upd = $pdo->prepare("UPDATE courses SET university_id = ?, name = ?, duration_years = ?, total_seats = ?, fee_frequency = ? WHERE id = ?");
+    $upd->execute([$universityId, $name, $duration, $seats, $feeFrequency, $id]);
     flash('success', 'Course updated successfully.');
     redirect('admin_courses.php?' . http_build_query(['university_id' => $universityId]));
 }
@@ -224,7 +226,13 @@ require_once __DIR__ . '/includes/header.php';
                 <label class="form-label">Duration (Years)</label>
                 <input type="number" name="duration_years" class="form-control mb-2" min="1" max="6" value="<?= e($c['duration_years']) ?>">
                 <label class="form-label">Total Seats <small class="text-muted">(blank = unlimited)</small></label>
-                <input type="number" name="total_seats" class="form-control" min="1" value="<?= e($c['total_seats']) ?>">
+                <input type="number" name="total_seats" class="form-control mb-2" min="1" value="<?= e($c['total_seats']) ?>">
+                <label class="form-label">Fee Frequency <small class="text-muted">(blank = inherit from university)</small></label>
+                <select name="fee_frequency" class="form-select mb-2">
+                  <option value="">Inherit from University</option>
+                  <option value="semester" <?= ($c['fee_frequency'] ?? '') === 'semester' ? 'selected' : '' ?>>Semester-wise</option>
+                  <option value="yearly" <?= ($c['fee_frequency'] ?? '') === 'yearly' ? 'selected' : '' ?>>Yearly</option>
+                </select>
               </div>
               <div class="modal-footer"><button type="submit" name="edit_item" value="1" class="btn btn-primary btn-sm">Save Changes</button></div>
             </form>
@@ -255,7 +263,13 @@ require_once __DIR__ . '/includes/header.php';
       <label class="form-label">Duration (Years)</label>
       <input type="number" name="duration_years" class="form-control mb-2" min="1" max="6" value="3">
       <label class="form-label">Total Seats <small class="text-muted">(optional)</small></label>
-      <input type="number" name="total_seats" class="form-control" min="1" placeholder="Leave blank for unlimited">
+      <input type="number" name="total_seats" class="form-control mb-2" min="1" placeholder="Leave blank for unlimited">
+      <label class="form-label">Fee Frequency <small class="text-muted">(blank = inherit from university)</small></label>
+      <select name="fee_frequency" class="form-select mb-2">
+        <option value="">Inherit from University</option>
+        <option value="semester">Semester-wise</option>
+        <option value="yearly">Yearly</option>
+      </select>
     </div>
     <div class="modal-footer"><button type="submit" name="add_item" value="1" class="btn btn-primary btn-sm">Add</button></div>
   </form>
