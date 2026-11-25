@@ -4,7 +4,7 @@ requireAdmin();
 
 $pageTitle = 'Centers';
 
-// Create new Center account
+// Create new Center account with sharing percentage
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_user'])) {
     $fullName = trim($_POST['full_name']);
     $username = trim($_POST['username']);
@@ -15,6 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_user'])) {
     $city     = trim($_POST['city'] ?? '');
     $state    = trim($_POST['state'] ?? '');
     $pincode  = trim($_POST['pincode'] ?? '');
+    $sharingPct = (float)($_POST['center_sharing_percentage'] ?? 0);
+
+    // Validate sharing percentage
+    if ($sharingPct < 0 || $sharingPct > 100) {
+        flash('error', 'Center sharing percentage must be between 0 and 100.');
+        redirect('admin_centers.php');
+    }
 
     $check = $pdo->prepare("SELECT id FROM users WHERE username = ?");
     $check->execute([$username]);
@@ -28,8 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_user'])) {
         $ins = $pdo->prepare("INSERT INTO users (full_name, username, email, password, plain_password, role, parent_user_id, aadhar_no, address, city, state, pincode)
                                VALUES (?, ?, ?, ?, ?, 'staff', NULL, ?, ?, ?, ?, ?)");
         $ins->execute([$fullName, $username, $email, $hash, $password, $aadhar ?: null, $address ?: null, $city ?: null, $state ?: null, $pincode ?: null]);
-        logActivity($pdo, $_SESSION['user_id'], 'staff_create', 'New center account created: ' . $fullName);
-        flash('success', 'Center account created successfully.');
+        $newCenterId = (int)$pdo->lastInsertId();
+
+        // Save center-level sharing percentage (applies to all courses, course_id = NULL)
+        saveCenterSharing($pdo, $newCenterId, $sharingPct, null);
+
+        logActivity($pdo, $_SESSION['user_id'], 'staff_create', 'New center account created: ' . $fullName . ' (Sharing: ' . $sharingPct . '%)');
+        flash('success', 'Center account created successfully with ' . number_format($sharingPct, 2) . '% sharing.');
     }
     redirect('admin_centers.php');
 }
@@ -58,16 +70,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
     redirect($_POST['redirect_to'] ?? 'admin_centers.php');
 }
 
-// Edit optional details (KYC / address) — does not touch login credentials
+// Edit center details — all fields editable by admin
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_details'])) {
     $uid = (int)$_POST['user_id'];
-    $upd = $pdo->prepare("UPDATE users SET email = ?, aadhar_no = ?, address = ?, city = ?, state = ?, pincode = ?
-                           WHERE id = ? AND role = 'staff' AND parent_user_id IS NULL");
-    $upd->execute([
-        trim($_POST['email']) ?: null, trim($_POST['aadhar_no']) ?: null, trim($_POST['address']) ?: null,
-        trim($_POST['city']) ?: null, trim($_POST['state']) ?: null, trim($_POST['pincode']) ?: null, $uid
-    ]);
-    flash('success', 'Center details updated.');
+    $fullName = trim($_POST['full_name']);
+    $username = trim($_POST['username']);
+    $email    = trim($_POST['email']) ?: null;
+    $phone    = trim($_POST['phone']) ?: null;
+    $aadhar   = trim($_POST['aadhar_no']) ?: null;
+    $address  = trim($_POST['address']) ?: null;
+    $city     = trim($_POST['city']) ?: null;
+    $state    = trim($_POST['state']) ?: null;
+    $pincode  = trim($_POST['pincode']) ?: null;
+    $status   = $_POST['status'] ?? 'active';
+
+    // Validate required fields
+    if ($fullName === '' || $username === '') {
+        flash('error', 'Full Name and Username are required.');
+    } else {
+        // Check username uniqueness (excluding current record)
+        $check = $pdo->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
+        $check->execute([$username, $uid]);
+        if ($check->fetch()) {
+            flash('error', 'Username already exists. Choose a different one.');
+        } else {
+            $upd = $pdo->prepare("UPDATE users SET full_name = ?, username = ?, email = ?, phone = ?,
+                                   aadhar_no = ?, address = ?, city = ?, state = ?, pincode = ?, status = ?
+                                   WHERE id = ? AND role = 'staff' AND parent_user_id IS NULL");
+            $upd->execute([$fullName, $username, $email, $phone, $aadhar, $address, $city, $state, $pincode, $status, $uid]);
+            flash('success', 'Center details updated successfully.');
+        }
+    }
     redirect($_POST['redirect_to'] ?? 'admin_centers.php');
 }
 
@@ -75,6 +108,12 @@ $centers = $pdo->query("SELECT u.*,
                         (SELECT COUNT(*) FROM students s WHERE s.created_by = u.id) as total_forms,
                         (SELECT COUNT(*) FROM users sc WHERE sc.parent_user_id = u.id) as subcenter_count
                         FROM users u WHERE role = 'staff' AND parent_user_id IS NULL ORDER BY created_at DESC")->fetchAll();
+
+// Pre-calculate fee totals with sharing for all centers (for table display)
+$centerFeeTotals = [];
+foreach ($centers as $c) {
+    $centerFeeTotals[$c['id']] = getFeeTotalsWithSharing($pdo, $c['id']);
+}
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -95,11 +134,11 @@ require_once __DIR__ . '/includes/header.php';
   <div class="table-responsive">
     <table class="table table-sm table-ledger align-middle">
       <thead class="table-light">
-        <tr><th>Name</th><th>Username</th><th>Password</th><th>Email</th><th>Registrations</th><th>Online Fees</th><th>Offline Fees</th><th>Sub-Centers</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
+        <tr><th>Name</th><th>Username</th><th>Password</th><th>Email</th><th>Registrations</th><th>Online Fees (Net)</th><th>Offline Fees (Net)</th><th>Center Discount</th><th>Center Savings</th><th>Sub-Centers</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
       </thead>
       <tbody>
         <?php foreach ($centers as $s): ?>
-        <?php $feeTotals = getFeeTotals($pdo, $s['id']); ?>
+        <?php $feeTotals = $centerFeeTotals[$s['id']] ?? ['online_total'=>0,'offline_total'=>0,'discount_total'=>0,'net_total'=>0,'gross_total'=>0]; ?>
         <tr>
           <td><a href="center_detail.php?id=<?= $s['id'] ?>"><?= e($s['full_name']) ?></a></td>
           <td><?= e($s['username']) ?></td>
@@ -116,6 +155,8 @@ require_once __DIR__ . '/includes/header.php';
           <td><?= $s['total_forms'] ?></td>
           <td>₹<?= number_format($feeTotals['online_total'], 2) ?></td>
           <td>₹<?= number_format($feeTotals['offline_total'], 2) ?></td>
+          <td><span class="text-success fw-bold">₹<?= number_format($feeTotals['discount_total'], 2) ?></span></td>
+          <td><span class="text-gold">₹<?= number_format($feeTotals['gross_total'] - $feeTotals['net_total'], 2) ?></span></td>
           <td>
             <?php if ($s['subcenter_count'] > 0): ?>
               <a href="admin_subcenters.php?center_id=<?= $s['id'] ?>"><?= $s['subcenter_count'] ?></a>
@@ -160,7 +201,7 @@ require_once __DIR__ . '/includes/header.php';
           </div>
         </div>
 
-        <!-- Edit details modal (optional KYC / address fields) -->
+        <!-- Edit details modal — ALL fields editable by admin -->
         <div class="modal fade" id="editModal<?= $s['id'] ?>" tabindex="-1">
           <div class="modal-dialog">
             <div class="modal-content">
@@ -172,12 +213,33 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="modal-body">
                   <input type="hidden" name="user_id" value="<?= $s['id'] ?>">
                   <div class="mb-2">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" name="full_name" class="form-control" value="<?= e($s['full_name']) ?>" required>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Username *</label>
+                    <input type="text" name="username" class="form-control" value="<?= e($s['username']) ?>" required>
+                  </div>
+                  <div class="mb-2">
                     <label class="form-label">Email</label>
                     <input type="email" name="email" class="form-control" value="<?= e($s['email']) ?>">
                   </div>
                   <div class="mb-2">
-                    <label class="form-label">Aadhar Card No. <small class="text-muted">(optional)</small></label>
-                    <input type="text" name="aadhar_no" class="form-control" value="<?= e($s['aadhar_no']) ?>">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" value="<?= e($s['phone']) ?>">
+                  </div>
+                  <div class="row g-2">
+                    <div class="col-md-6 mb-2">
+                      <label class="form-label">Aadhar Card No. <small class="text-muted">(optional)</small></label>
+                      <input type="text" name="aadhar_no" class="form-control" value="<?= e($s['aadhar_no']) ?>">
+                    </div>
+                    <div class="col-md-6 mb-2">
+                      <label class="form-label">Status</label>
+                      <select name="status" class="form-select">
+                        <option value="active" <?= $s['status'] === 'active' ? 'selected' : '' ?>>Active</option>
+                        <option value="inactive" <?= $s['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                      </select>
+                    </div>
                   </div>
                   <div class="mb-2">
                     <label class="form-label">Address <small class="text-muted">(optional)</small></label>
@@ -239,6 +301,11 @@ require_once __DIR__ . '/includes/header.php';
           <div class="mb-2">
             <label class="form-label">Password</label>
             <input type="password" name="password" class="form-control" minlength="6" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Center Sharing Percentage <small class="text-muted">(%)</small></label>
+            <input type="number" step="0.01" min="0" max="100" name="center_sharing_percentage" class="form-control" value="0" required>
+            <div class="form-text">This discount applies to ALL courses registered by this center. Example: Course fee ₹10,000, Sharing 50% → Center pays ₹5,000.</div>
           </div>
           <hr>
           <p class="text-muted small mb-2">The fields below are optional and can be filled in later from Edit Details.</p>
