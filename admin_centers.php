@@ -83,10 +83,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_details'])) {
     $state    = trim($_POST['state']) ?: null;
     $pincode  = trim($_POST['pincode']) ?: null;
     $status   = $_POST['status'] ?? 'active';
+    $sharingPct = (float)($_POST['center_sharing_percentage'] ?? 0);
 
     // Validate required fields
     if ($fullName === '' || $username === '') {
         flash('error', 'Full Name and Username are required.');
+    } elseif ($sharingPct < 0 || $sharingPct > 100) {
+        flash('error', 'Center sharing percentage must be between 0 and 100.');
     } else {
         // Check username uniqueness (excluding current record)
         $check = $pdo->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
@@ -98,6 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_details'])) {
                                    aadhar_no = ?, address = ?, city = ?, state = ?, pincode = ?, status = ?
                                    WHERE id = ? AND role = 'staff' AND parent_user_id IS NULL");
             $upd->execute([$fullName, $username, $email, $phone, $aadhar, $address, $city, $state, $pincode, $status, $uid]);
+
+            // Save center-level sharing percentage (applies to all courses, course_id = NULL)
+            saveCenterSharing($pdo, $uid, $sharingPct, null);
+
+            logActivity($pdo, $_SESSION['user_id'], 'center_sharing_update', 'Updated center sharing to ' . $sharingPct . '% for ' . $fullName, $uid);
             flash('success', 'Center details updated successfully.');
         }
     }
@@ -227,6 +235,11 @@ require_once __DIR__ . '/includes/header.php';
                   <div class="mb-2">
                     <label class="form-label">Phone</label>
                     <input type="text" name="phone" class="form-control" value="<?= e($s['phone']) ?>">
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Center Sharing Percentage <small class="text-muted">(%)</small></label>
+                    <input type="number" step="0.01" min="0" max="100" name="center_sharing_percentage" class="form-control" value="<?= number_format((float)(getCenterSharing($pdo, $s['id'])['sharing_percentage'] ?? 0), 2) ?>" required>
+                    <div class="form-text">Percentage discount on course fee for this center. Example: 60% → Center pays 40% of course fee.</div>
                   </div>
                   <div class="row g-2">
                     <div class="col-md-6 mb-2">
