@@ -12,6 +12,32 @@ if (!$center) {
     redirect('admin_centers.php');
 }
 
+// Get active university for this center (first student's university, or first active)
+$activeUni = getActiveUniversity($pdo);
+
+// ---- Handle sharing configuration save ----
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_sharing'])) {
+    $sharingPct = (float)($_POST['sharing_percentage'] ?? 0);
+    $courseId = !empty($_POST['course_id']) ? (int)$_POST['course_id'] : null;
+
+    // Validate
+    if ($sharingPct < 0 || $sharingPct > 100) {
+        flash('error', 'Sharing percentage must be between 0 and 100.');
+    } else {
+        saveCenterSharing($pdo, $id, $sharingPct, $courseId);
+        flash('success', $courseId ? 'Course-specific sharing saved.' : 'Default sharing saved.');
+    }
+    redirect('center_detail.php?id=' . $id);
+}
+
+// ---- Handle sharing delete ----
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_sharing'])) {
+    $sharingId = (int)$_POST['sharing_id'];
+    deleteCenterSharing($pdo, $sharingId);
+    flash('success', 'Sharing configuration deleted.');
+    redirect('center_detail.php?id=' . $id);
+}
+
 $regStmt = $pdo->prepare("SELECT s.*, c.name as course_name, un.name as university_name, sy.year_label,
                            (SELECT status FROM fees f WHERE f.student_id = s.id ORDER BY f.id DESC LIMIT 1) as fee_status,
                            (SELECT amount FROM fees f WHERE f.student_id = s.id ORDER BY f.id DESC LIMIT 1) as fee_amount,
@@ -25,9 +51,19 @@ $regStmt = $pdo->prepare("SELECT s.*, c.name as course_name, un.name as universi
 $regStmt->execute([$id]);
 $registrations = $regStmt->fetchAll();
 
-$feeTotals = getFeeTotals($pdo, $id);
+// Get fee totals with sharing calculations
+$feeTotals = getFeeTotalsWithSharing($pdo, $id);
 
 $subcenters = $pdo->query("SELECT id, full_name FROM users WHERE parent_user_id = $id ORDER BY full_name")->fetchAll();
+
+// Get sharing configurations
+$sharingConfigs = getAllCenterSharing($pdo, $id);
+
+// Get courses for this university (for sharing dropdown)
+$coursesForSharing = [];
+if ($activeUni) {
+    $coursesForSharing = getCoursesForSharing($pdo, $activeUni['id']);
+}
 
 // ---- CSV export ----
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
@@ -63,6 +99,7 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </div>
 
+<!-- Fee Summary Cards -->
 <div class="row g-3 mb-4">
   <div class="col-6 col-md-3">
     <div class="stat-card">
@@ -74,14 +111,14 @@ require_once __DIR__ . '/includes/header.php';
   <div class="col-6 col-md-3">
     <div class="stat-card">
       <i class="fa-solid fa-wifi stat-icon"></i>
-      <div class="stat-label">Online Fees</div>
+      <div class="stat-label">Online Fees (Net)</div>
       <div class="stat-value" style="font-size:1.5rem;">₹<?= number_format($feeTotals['online_total'], 2) ?></div>
     </div>
   </div>
   <div class="col-6 col-md-3">
     <div class="stat-card">
       <i class="fa-solid fa-money-bill-wave stat-icon"></i>
-      <div class="stat-label">Offline Fees</div>
+      <div class="stat-label">Offline Fees (Net)</div>
       <div class="stat-value" style="font-size:1.5rem;">₹<?= number_format($feeTotals['offline_total'], 2) ?></div>
     </div>
   </div>
@@ -94,6 +131,40 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </div>
 
+<!-- Sharing Summary Cards -->
+<?php if ($feeTotals['discount_total'] > 0): ?>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card" style="border-left-color: var(--success);">
+      <i class="fa-solid fa-tags stat-icon" style="color: var(--success);"></i>
+      <div class="stat-label">Center Discount (Sharing)</div>
+      <div class="stat-value" style="font-size:1.5rem; color: var(--success);">₹<?= number_format($feeTotals['discount_total'], 2) ?></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card" style="border-left-color: var(--navy);">
+      <i class="fa-solid fa-sack-dollar stat-icon" style="color: var(--navy);"></i>
+      <div class="stat-label">Net Collected from Center</div>
+      <div class="stat-value" style="font-size:1.5rem; color: var(--navy);">₹<?= number_format($feeTotals['net_total'], 2) ?></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <i class="fa-solid fa-money-bill-trend-up stat-icon"></i>
+      <div class="stat-label">Gross Course Fees</div>
+      <div class="stat-value" style="font-size:1.5rem;">₹<?= number_format($feeTotals['gross_total'], 2) ?></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card" style="border-left-color: var(--gold);">
+      <i class="fa-solid fa-hand-holding-dollar stat-icon" style="color: var(--gold);"></i>
+      <div class="stat-label">Center Saves</div>
+      <div class="stat-value" style="font-size:1.5rem; color: var(--gold);">₹<?= number_format($feeTotals['gross_total'] - $feeTotals['net_total'], 2) ?></div>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
+
 <?php if ($subcenters): ?>
 <div class="table-card p-3 mb-3">
   <div class="section-title mb-2">Sub-Centers under this Center</div>
@@ -102,6 +173,109 @@ require_once __DIR__ . '/includes/header.php';
   <?php endforeach; ?>
 </div>
 <?php endif; ?>
+
+<!-- Fee Sharing Configuration Section -->
+<div class="table-card p-3 mb-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="section-title mb-0">Fee Sharing Configuration</div>
+    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#sharingModal">
+      <i class="fa-solid fa-plus"></i> Add / Update Sharing
+    </button>
+  </div>
+
+  <?php if ($sharingConfigs): ?>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm table-ledger align-middle">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Course</th>
+          <th>Sharing % (Center Discount)</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($sharingConfigs as $sc): ?>
+        <tr>
+          <td>
+            <span class="badge bg-<?= $sc['course_id'] ? 'info' : 'primary' ?>">
+              <?= $sc['course_id'] ? 'Course-Specific' : 'Default (All Courses)' ?>
+            </span>
+          </td>
+          <td><?= $sc['course_name'] ? e($sc['course_name']) : '<span class="text-muted">—</span>' ?></td>
+          <td><strong><?= number_format($sc['sharing_percentage'], 2) ?>%</strong>
+            <div class="small text-muted">
+              Center pays <?= number_format(100 - $sc['sharing_percentage'], 2) ?>% of course fee
+            </div>
+          </td>
+          <td><span class="badge bg-<?= $sc['is_active'] ? 'success' : 'secondary' ?>"><?= $sc['is_active'] ? 'Active' : 'Inactive' ?></span></td>
+          <td>
+            <form method="POST" class="d-inline" onsubmit="return confirm('Delete this sharing configuration?');">
+              <input type="hidden" name="sharing_id" value="<?= $sc['id'] ?>">
+              <button type="submit" name="delete_sharing" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+  <?php else: ?>
+  <div class="alert alert-light border small mb-0">
+    <i class="fa-solid fa-circle-info"></i> No sharing configuration set. Click <strong>Add / Update Sharing</strong> to configure default sharing percentage for this center.
+  </div>
+  <?php endif; ?>
+</div>
+
+<!-- Sharing Configuration Modal -->
+<div class="modal fade" id="sharingModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST">
+        <div class="modal-header">
+          <h6 class="modal-title">Configure Fee Sharing</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Scope</label>
+            <select name="course_id" class="form-select" id="sharingCourseSelect">
+              <option value="">Default (All Courses)</option>
+              <?php foreach ($coursesForSharing as $c): ?>
+                <option value="<?= $c['id'] ?>"><?= e($c['name']) ?></option>
+              <?php endforeach; ?>
+            </select>
+            <div class="form-text">Select a course for course-specific sharing, or leave as Default for all courses.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Sharing Percentage <small class="text-muted">(%)</small></label>
+            <input type="number" step="0.01" min="0" max="100" name="sharing_percentage" class="form-control" value="0" required>
+            <div class="form-text">
+              <strong>This is the discount the center gets on the course fee.</strong><br>
+              Example: Course fee ₹10,000, Sharing 60% → Center pays ₹4,000 (40%) and saves ₹6,000.
+            </div>
+          </div>
+
+          <div class="alert alert-info small mt-3">
+            <i class="fa-solid fa-circle-info"></i>
+            <strong>How it works:</strong>
+            Course Fee × (100 - Sharing %) / 100 = Amount Center Pays<br>
+            <strong>Examples:</strong>
+            • Course ₹10,000, Sharing 60% → Center pays ₹4,000
+            • Course ₹25,000, Sharing 50% → Center pays ₹12,500
+            • Course ₹50,000, Sharing 30% → Center pays ₹35,000
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="save_sharing" class="btn btn-sm btn-primary">Save Configuration</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <div class="table-card p-3 mb-3">
   <div class="d-flex justify-content-between align-items-center mb-2">
